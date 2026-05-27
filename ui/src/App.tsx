@@ -1,10 +1,10 @@
 import { A, Route, Router, useLocation } from '@solidjs/router'
 import './App.scss'
-import { createSelector, createSignal, type JSX, lazy, onCleanup, onMount } from 'solid-js'
-import { MdTwotoneVerified } from 'solid-icons/md'
+import { createSelector, createSignal, type JSX, lazy, onCleanup, onMount, Show } from 'solid-js'
+import { MdRoundAccount_box, MdSharpPower_settings_new, MdTwotoneVerified } from 'solid-icons/md'
 import { BiRegularBrain } from 'solid-icons/bi'
 import { HiOutlineBars3 } from 'solid-icons/hi'
-import { LinechessProvider } from './state/State'
+import { LinechessProvider, useState } from './state/State'
 
 const Main = lazy(() => import('./routes/Main'))
 const Evaluator = lazy(() => import('./routes/Evaluator'))
@@ -15,16 +15,20 @@ const Layout = (props: { children?: JSX.Element }) => {
   const is_selected = createSelector(() => location.pathname)
 
   const [is_navigation_active, set_is_navigation_active] = createSignal(false)
+  const [is_dash_active, set_is_dash_active] = createSignal(false)
 
   onMount(() => {
 
     const on_close_click = (event: MouseEvent) => {
-      if (is_navigation_active()) {
+      if (is_navigation_active() || is_dash_active()) {
         const clickedInsideMenu = false//$navLinks.contains(event.target as HTMLElement);
         const clickedToggleButton = $menuToggle.contains(event.target as HTMLElement);
+        const clickedDashButton = $dashToggle.contains(event.target as HTMLElement);
 
-        if (!clickedInsideMenu && !clickedToggleButton) {
+        if (clickedInsideMenu || clickedToggleButton || clickedDashButton) {
+        } else {
           set_is_navigation_active(false)
+          set_is_dash_active(false)
         }
       }
 
@@ -40,7 +44,9 @@ const Layout = (props: { children?: JSX.Element }) => {
 
   let $navLinks!: HTMLDivElement
   let $menuToggle!: HTMLDivElement
+  let $dashToggle!: HTMLDivElement
 
+  let [{dashboard_state: state}, { dashboard_actions: { login_with_lichess, logout }}] = useState()
 
 
   return (<>
@@ -70,8 +76,16 @@ const Layout = (props: { children?: JSX.Element }) => {
           <div class='value'>Synchronized</div>
         </div>
         <div class='profile'>
-          RESET-RESET-RESET
+          <Show when={state.logged_in_profile} fallback={
+            <div onClick={login_with_lichess} class='login'>Login with Lichess</div>
+          }>{profile => 
+            <div ref={$dashToggle} class='username' onClick={() => set_is_dash_active(!is_dash_active())}>{profile().username}</div>
+            }</Show>
         </div>
+      </div>
+      <div classList={{active: is_dash_active()}} class='dash-menu'>
+        <div class='link profile'><MdRoundAccount_box/>Profile</div>
+        <div onClick={logout} class='link logout'><MdSharpPower_settings_new/> Logout</div>
       </div>
     </header>
     <div class='main-wrap'>

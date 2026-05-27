@@ -1,0 +1,6 @@
+{
+    "ENV": "development",
+    "PORT": null,
+    "SECRET": "cat",
+    "WEB_DOMAIN": "localhost:5173"
+}

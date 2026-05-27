@@ -51,6 +51,10 @@ header {
             gap: variables.$s1;
     
             text-transform: uppercase;
+
+            @include variables.respond-to("md") {
+                line-height: variables.$m2;
+            }
     
     
             .title {
@@ -79,7 +83,7 @@ header {
                     padding-inline: variables.$s1;
                     align-items: center;
                     background: variables.$green-4;
-                    @include variables.responsive-font(10, 15);
+                    @include variables.responsive-font(10, 13);
                 }
             }
     
@@ -188,9 +192,12 @@ header {
 
             .profile {
 
+                display: flex;
+
+                min-width: variables.$l2;
                 @include variables.responsive-font(8, 14);
                 margin-inline: variables.$s3;
-                padding: variables.$s1;
+                color: variables.$white2;
                 background: variables.$navy2;
                 border-radius: variables.$px;
                 border: variables.$px solid variables.$navy0;
@@ -199,6 +206,70 @@ header {
                 text-overflow: ellipsis;
                 overflow: hidden;
                 white-space: nowrap;
+
+                .login, .username {
+                    cursor: pointer;
+                    text-align: center;
+                    flex: 1;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .login {
+                    padding-inline: variables.$s1;
+                    &:hover {
+                       color: variables.$white1;
+                    }
+                }
+
+                .username {
+                    @include variables.no-select;
+                    &:hover {
+                       color: variables.$white1;
+                       background: variables.$navy-1;
+                    }
+                }
             }
+    }
+
+    .dash-menu {
+        flex: 1;
+
+        display: flex;
+        flex-flow: column;
+        position: absolute;
+        background: variables.$navy0;
+        right: 0px;
+        border-radius: variables.$s0; 
+        border: variables.$s0 solid variables.$navy1;
+        top: calc(var(--header-height) - variables.$m2);
+
+        &:not(.active) {
+            display: none;
+        }
+
+
+        .link {
+
+            display: flex;
+            align-items: center;
+            gap: variables.$m1;
+            padding: variables.$s1 0;
+            padding-left: variables.$m1;
+            padding-right: variables.$l2;
+            @include variables.no-select;
+            &:hover {
+               background: variables.$navy1;
+            }
+
+            svg {
+                font-size: variables.$l0;
+            }
+
+            &.logout:hover {
+               background: variables.$red1;
+            }
+        }
     }
 }

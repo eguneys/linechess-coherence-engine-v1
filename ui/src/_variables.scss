@@ -84,11 +84,11 @@ $navy5: color.adjust($navy0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
 
 
 
-$white0: color.adjust(color.mix(white,gold, $weight: 99%));
-$white1: color.adjust($white0, $lightness: -1%);
-$white2: color.adjust($white0, $lightness: -2%);
-$white3: color.adjust($white0, $lightness: -3%);
-$white5: color.adjust($white0, $lightness: -5%);
+$white0: color.adjust(color.mix(white, yellow, $weight: 99%));
+$white1: color.adjust($white0, $lightness: -5%);
+$white2: color.adjust($white0, $lightness: -10%);
+$white3: color.adjust($white0, $lightness: -15%);
+$white5: color.adjust($white0, $lightness: -20%);
 $black0: color.adjust(
           color.mix(black, navy, $weight: 80%), $saturation: -3%, $lightness: -30%);
 $black025: color.adjust($black0, $lightness:  2.5%);
@@ -130,6 +130,14 @@ $red5: color.adjust($red0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
     border-radius: $s0;
     border: 1px solid $black2;
 }
+
+@mixin no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+}
+
+
 
 $breakpoints: (
     "sm": 576px,
