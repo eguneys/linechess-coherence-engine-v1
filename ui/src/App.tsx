@@ -3,8 +3,8 @@ import './App.scss'
 import { createSelector, createSignal, type JSX, lazy, onCleanup, onMount } from 'solid-js'
 import { MdTwotoneVerified } from 'solid-icons/md'
 import { BiRegularBrain } from 'solid-icons/bi'
-import { FaSolidHamburger } from 'solid-icons/fa'
 import { HiOutlineBars3 } from 'solid-icons/hi'
+import { LinechessProvider } from './state/State'
 
 const Main = lazy(() => import('./routes/Main'))
 const Evaluator = lazy(() => import('./routes/Evaluator'))
@@ -85,10 +85,12 @@ const Layout = (props: { children?: JSX.Element }) => {
 function App() {
 
   return (<>
-    <Router root={Layout}>
-      <Route path='/' component={Main}/>
-      <Route path='/evaluator' component={Evaluator}/>
-    </Router>
+    <LinechessProvider>
+      <Router root={Layout}>
+        <Route path='/' component={Main} />
+        <Route path='/evaluator' component={Evaluator} />
+      </Router>
+    </LinechessProvider>
   </>)
 }
 
