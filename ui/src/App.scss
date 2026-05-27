@@ -1,0 +1,204 @@
+@use 'variables';
+
+header {
+
+    --header-height: 4.2em;
+
+    @include variables.google-sans-flex(500);
+
+    display: flex;
+    position: relative;
+
+    background: variables.$navy1;
+    color: variables.$white1;
+    align-items: center;
+    height: var(--header-height);
+    border-bottom: variables.$s1 solid variables.$green-3;
+
+    .long {
+        flex: 1;
+        @include variables.respond-to('lg') {
+            flex: 0;
+        }
+    }
+
+    .menu {
+        display: flex;
+        font-size: 3em;
+        @include variables.respond-to('lg') {
+            display: none;
+        }
+
+        padding: variables.$s2;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+
+        &:hover, &.active {
+            color: variables.$navy2;
+            background: variables.$white5;
+
+        }
+    }
+
+
+
+    .brand {
+        display: flex;
+        .title-tag {
+            display: flex;
+            flex-flow: column;
+            gap: variables.$s1;
+    
+            text-transform: uppercase;
+    
+    
+            .title {
+                @include variables.google-sans-flex(600);
+                display: none;
+    
+                @include variables.respond-to('sm') {
+                    display: flex;
+                }
+    
+                align-items: flex-end;
+                gap: variables.$s2;
+                @include variables.tight;
+                @include variables.responsive-font(10, 18);
+    
+                .tag {
+                    display: none;
+    
+                    @include variables.respond-to('md') {
+                        display: flex;
+                    }
+    
+    
+                    color: variables.$black1;
+                    @include variables.rounded;
+                    padding-inline: variables.$s1;
+                    align-items: center;
+                    background: variables.$green-4;
+                    @include variables.responsive-font(10, 15);
+                }
+            }
+    
+            span {
+    
+                display: none;
+    
+                @include variables.respond-to('md') {
+                    display: flex;
+                }
+    
+                @include variables.responsive-font(8, 12);
+                @include variables.aldrich;
+                color: variables.$grey-1;
+            }
+        }
+    
+        .logo {
+    
+            display: none;
+    
+            @include variables.respond-to('sm') {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+    
+            @include variables.responsive-font(12, 18);
+            position: relative;
+            aspect-ratio: 1;
+            width: 1.6em;
+            color: variables.$navy-1;
+            background: variables.$green-3;
+            margin-inline: variables.$m2;
+            transform: rotate(45deg);
+    
+    
+            svg {
+                transform: rotate(-45deg);
+            }
+        }
+    }
+
+    nav {
+        flex: 1;
+
+        display: flex;
+        flex-flow: column;
+        position: absolute;
+        background: variables.$navy1;
+        left: -200px;
+        padding-right: variables.$l0;
+        padding-left: variables.$m1;
+        top: var(--header-height);
+
+        &.active {
+            left: 0px;
+        }
+
+        transition: left .1s;
+
+        @include variables.respond-to('lg') {
+            display: flex;
+            justify-content: center;
+            display: flex;
+            gap: variables.$m2;
+            position: unset;
+            background: transparent;
+            flex-flow: row;
+        }
+
+        a {
+        
+           display: flex;
+           @include variables.responsive-font(9, 11.5);
+           color: variables.$green-3;
+           text-transform: uppercase;
+           text-decoration: none;
+           line-height: variables.$m4;
+
+           border-bottom: variables.$s0 solid transparent;
+           &.active {
+              border-bottom: variables.$s0 solid variables.$green-3;
+           }
+        }
+    }
+
+    .dash {
+        display: flex;
+        justify-content: flex-end;
+        gap: variables.$s3;
+
+        .status {
+            display: flex;
+            flex-flow: column;
+            align-items: flex-end;
+           @include variables.responsive-font(8, 14);
+                .label {
+                    @include variables.responsive-font(8, 14);
+                    color: variables.$grey-1;
+                    text-transform: uppercase;
+                    @include variables.loose;
+                }
+
+            }
+
+            .profile {
+
+                @include variables.responsive-font(8, 14);
+                margin-inline: variables.$s3;
+                padding: variables.$s1;
+                background: variables.$navy2;
+                border-radius: variables.$px;
+                border: variables.$px solid variables.$navy0;
+                line-height: variables.$m4;
+
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+    }
+}

@@ -1,0 +1,208 @@
+@use "sass:math";
+@use 'sass:color';
+@use 'sass:map';
+
+$spacing: 0.25rem;
+$spacing_m: 0.5rem;
+$spacing_l: 3rem;
+$spacing_xl: 7rem;
+
+$px: 1px;
+$s0: $spacing * 0.5;
+$s1: $spacing;
+$s2: $spacing * 2;
+$s25: $spacing * 2.5;
+$s3: $spacing * 3;
+$s35: $spacing * 3.5;
+$s4: $spacing * 4;
+$m0: $spacing_m * 0.5;
+$m1: $spacing_m * 1;
+$m15: $spacing_m * 1.5;
+$m2: $spacing_m * 2;
+$m25: $spacing_m * 2.5;
+$m3: $spacing_m * 3;
+$m35: $spacing_m * 3.5;
+$m4: $spacing_m * 4;
+$l0: $spacing_l * 0.5;
+$l1: $spacing_l * 1;
+$l15: $spacing_l * 1.5;
+$l2: $spacing_l * 2;
+$l25: $spacing_l * 2.5;
+$l3: $spacing_l * 3;
+$l35: $spacing_l * 3.5;
+$l4: $spacing_l * 4;
+$xl0: $spacing_xl * 0.5;
+$xl1: $spacing_xl * 1;
+$xl15: $spacing_xl * 1.5;
+$xl2: $spacing_xl * 2;
+$xl25: $spacing_xl * 2.5;
+$xl3: $spacing_xl * 3;
+$xl35: $spacing_xl * 3.5;
+$xl4: $spacing_xl * 4;
+
+
+
+$green0: color.adjust(
+          color.mix(green, blue, $weight: 80%), $saturation: -3%, $lightness: -3%);
+$green-1: color.adjust($green0, $lightness: 10%);
+$green-2: color.adjust($green0, $lightness: 20%);
+$green-3: color.adjust($green0, $lightness: 30%);
+$green-4: color.adjust($green0, $lightness: 40%);
+$green1: color.adjust($green0, $lightness: -10%);
+$green2: color.adjust($green0, $lightness: -20%);
+$green3: color.adjust($green0, $lightness: -30%);
+$green4: color.adjust($green0, $lightness: -40%);
+
+
+
+$grey0: color.adjust(
+          color.mix(grey, blue, $weight: 80%), $saturation: -3%, $lightness: -3%);
+$grey-1: color.adjust($grey0, $lightness: 10%);
+
+$navy0: color.adjust(color.mix(navy, cyan, 87%), $saturation: -30%);
+$navy-5: color.adjust($navy0, $lightness: 50%);
+$navy-4: color.adjust($navy0, $lightness: 40%);
+$navy-3: color.adjust($navy0, $lightness: 30%);
+$navy-25: color.adjust($navy0, $lightness: 25%);
+$navy-2: color.adjust($navy0, $lightness: 20%);
+$navy-1: color.adjust($navy0, $lightness: 10%);
+$navy-05: color.adjust($navy0,$lightness:  5%);
+$navy05: color.adjust($navy0, $lightness: -5%);
+$navy1: color.adjust($navy0,  $lightness: -10%);
+$navy15: color.adjust($navy0,  $lightness: -15%);
+$navy175: color.adjust($navy0,  $lightness: -17.5%);
+$navy2: color.adjust($navy0,  $lightness: -20%);
+$navy25: color.adjust($navy0,  $lightness: -25%);
+$navy3: color.adjust($navy0,  $lightness: -30%);
+$navy35: color.adjust($navy0,  $lightness: -35%);
+$navy4: color.adjust($navy0,  $lightness: -40%);
+$navy45: color.adjust($navy0,  $lightness: -45%);
+$navy5: color.adjust($navy0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
+
+
+
+
+
+
+$white0: color.adjust(color.mix(white,gold, $weight: 99%));
+$white1: color.adjust($white0, $lightness: -1%);
+$white2: color.adjust($white0, $lightness: -2%);
+$white3: color.adjust($white0, $lightness: -3%);
+$white5: color.adjust($white0, $lightness: -5%);
+$black0: color.adjust(
+          color.mix(black, navy, $weight: 80%), $saturation: -3%, $lightness: -30%);
+$black025: color.adjust($black0, $lightness:  2.5%);
+$black03: color.adjust($black0, $lightness:  3%);
+$black05: color.adjust($black0, $lightness:  5%);
+$black075: color.adjust($black0, $lightness:  7.5%);
+$black1: color.adjust($black0,  $lightness: 10%);
+$black125: color.adjust($black0,  $lightness: 12.5%);
+$black15: color.adjust($black0,  $lightness: 15%);
+$black16: color.adjust($black0,  $lightness: 16%);
+$black175: color.adjust($black0,  $lightness: 17.5%);
+$black2: color.adjust($black0,  $lightness: 20%);
+$black25: color.adjust($black0,  $lightness: 25%);
+$black3: color.adjust($black0,  $lightness: 30%);
+$black35: color.adjust($black0,  $lightness: 35%);
+$black4: color.adjust($black0,  $lightness: 40%);
+$backdrop-color: color.mix($black3, transparent, 10%);
+$red0: red;
+$red-5: color.adjust($red0, $lightness: 50%);
+$red-4: color.adjust($red0, $lightness: 40%);
+$red-3: color.adjust($red0, $lightness: 30%);
+$red-25: color.adjust($red0, $lightness: 25%);
+$red-2: color.adjust($red0, $lightness: 20%);
+$red-1: color.adjust($red0, $lightness: 10%);
+$red-05: color.adjust($red0,$lightness:  5%);
+$red05: color.adjust($red0, $lightness: -5%);
+$red1: color.adjust($red0,  $lightness: -10%);
+$red15: color.adjust($red0,  $lightness: -15%);
+$red175: color.adjust($red0,  $lightness: -17.5%);
+$red2: color.adjust($red0,  $lightness: -20%);
+$red25: color.adjust($red0,  $lightness: -25%);
+$red3: color.adjust($red0,  $lightness: -30%);
+$red35: color.adjust($red0,  $lightness: -35%);
+$red4: color.adjust($red0,  $lightness: -40%);
+$red45: color.adjust($red0,  $lightness: -45%);
+$red5: color.adjust($red0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
+
+@mixin rounded {
+    border-radius: $s0;
+    border: 1px solid $black2;
+}
+
+$breakpoints: (
+    "sm": 576px,
+    "md": 768px,
+    "lg": 992px,
+    "xl": 1200px
+);
+
+@mixin respond-to($breakpoint) {
+
+    // Check if the key exists in the map
+    @if map.has-key($breakpoints, $breakpoint) {
+        @media (min-width: map.get($breakpoints, $breakpoint)) {
+            @content;
+        }
+    }
+
+    @else {
+        @warn "Unknown breakpoint: #{$breakpoint}.";
+    }
+}
+
+@mixin fixed-inset {
+    position: fixed;
+    inset: 0;
+}
+
+
+
+
+@mixin aldrich {
+  font-family: "Aldrich", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@mixin google-sans-flex($weight) {
+  font-family: "Google Sans Flex", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: $weight;
+  font-style: normal;
+  font-variation-settings:
+    "slnt" 0,
+    "wdth" 100,
+    "GRAD" 0,
+    "ROND" 0;
+}
+
+@mixin tight {
+    letter-spacing: -0.025em;
+}
+@mixin loose {
+    letter-spacing: 0.1em;
+}
+
+/// Responsive Font Size Mixin using CSS clamp()
+/// @param $min-size - The font size at the smallest breakpoint (in px)
+/// @param $max-size - The font size at the largest breakpoint (in px)
+/// @param $min-breakpoint - The lower viewport bound (default: 320px)
+/// @param $max-breakpoint - The upper viewport bound (default: 1200px)
+@mixin responsive-font($min-size, $max-size, $min-breakpoint: 320, $max-breakpoint: 1200) {
+  // Convert px to rem for better accessibility
+  $min-size-rem: calc($min-size / 16) * 1rem;
+  $max-size-rem: calc($max-size / 16) * 1rem;
+  
+  // Calculate the variable scaling rate (slope) and intersection
+  $slope: calc(($max-size - $min-size) / ($max-breakpoint - $min-breakpoint));
+  $y-intersection: -$min-breakpoint * $slope + $min-size;
+  
+  // Convert intersection to rem and slope to viewport width (vw)
+  $intersection-rem: calc($y-intersection / 16) * 1rem;
+  $slope-vw: ($slope * 100) * 1vw;
+  
+  // Output the fluid font size using clamp
+  font-size: clamp(#{$min-size-rem}, #{$intersection-rem} + #{$slope-vw}, #{$max-size-rem});
+}
