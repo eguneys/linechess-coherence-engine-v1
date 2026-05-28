@@ -3,19 +3,28 @@ import './Main.scss'
 import { BiRegularBookOpen, BiRegularBrain } from "solid-icons/bi";
 import { BsPlus, BsTrash} from "solid-icons/bs";
 import { HiOutlineSquare3Stack3d } from "solid-icons/hi";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { createSelector, createSignal, For, onMount, Show } from "solid-js";
 import { useState } from "../state/State";
 import { AiOutlineClose } from "solid-icons/ai";
 import { parse_mainline_from_pgn } from "../state/chess_parser";
 import { MdOutlineCommit } from "solid-icons/md";
 import { InvalidPGNException } from "../state/db_sync/idb_model";
 import { NoPlaylistSelected } from "../state/linechess_state";
+import type { LineId } from "../state/types";
 
 export default function Main() {
 
-  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, set_open_create_new_playlist, set_open_create_new_book }}] = useState()
+  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, set_open_create_new_playlist, set_open_create_new_book, select_book, select_playlist, set_open_edit_line, select_line, delete_line }}] = useState()
 
-    return (<>
+  const is_selected_book = createSelector(() => state.selected_book?.id)
+  const is_selected_playlist = createSelector(() => state.selected_playlist?.id)
+
+  const on_edit_line = async (_: LineId) => {
+    await select_line(_)
+    set_open_edit_line(true)
+  }
+
+  return (<>
     <main class='composition'>
         <div class='panel'>
             <div class='title'><TbOutlineActivityHeartbeat />Unified repertoire workspace</div>
@@ -32,9 +41,15 @@ export default function Main() {
                 <div class='content'>
                     <div class='list'>
                         <For each={state.books}>{ book =>
-                            <div class='book'>
+                            <div onClick={() => select_book(book.id)} class='book' classList={{ active: is_selected_book(book.id) }}>
+                              <div class='info'>
                                 <div class='title'>{book.name}</div>
                                 <span class='nb-playlists'>{book.nb_playlists} Playlists</span>
+                              </div>
+                              <div class='long'></div>
+                              <div class='actions'>
+                                <button title="Edit"><TbOutlinePencilMinus /></button>
+                              </div>
                             </div>
                         }</For>
                     </div>
@@ -48,10 +63,16 @@ export default function Main() {
                 </div>
                 <div class='content'>
                     <div class='list'>
-                        <For each={state.selected_book?.playlists}>{ () =>
-                            <div class='playlist'>
-                                <div class='title'>1. The Ruy Lopez (Spanish Game) </div>
-                                <span class='nb-lines'>10 Lines</span>
+                        <For each={state.selected_book?.playlists}>{ item =>
+                            <div onClick={() => select_playlist(item.id)} classList={{active: is_selected_playlist(item.id)}} class='playlist'>
+                              <div class='info'>
+                                <div class='title'>{item.name}</div>
+                                <span class='nb-lines'>{item.nb_lines} Lines</span>
+                              </div>
+                              <div class='long'></div>
+                              <div class='actions'>
+                                <button title="Edit"><TbOutlinePencilMinus /></button>
+                              </div>
                             </div>
                         }</For>
                     </div>
@@ -67,11 +88,17 @@ export default function Main() {
                     <div class='list'>
                         <For each={state.selected_playlist?.lines}>{ (_, i) =>
                             <div class='line'>
-                                <div class='title'><span class='index'>{i() + 1}</span> Berlin Defence: L'Hermet Variation</div>
+                                <div class='title'>
+                                  <span class='index'>{i() + 1}</span>{_.name}
+                                
+                                <div class='long'></div>
+                                  <div class='actions'>
+                                    <button onClick={() => on_edit_line(_.id)} title="Edit"><TbOutlinePencilMinus/></button>
+                                    <button onClick={() => delete_line(_.id) } title="Delete" class='delete'><BsTrash/></button>
+                                   </div>
+                                </div>
                                 <span class='pgn'>
                                     <PgnLine pgn={_.pgn}/>
-                                    <button title="Edit"><TbOutlinePencilMinus/></button>
-                                    <button title="Delete" class='delete'><BsTrash/></button>
                                 </span>
                             </div>
                         }</For>
@@ -89,6 +116,10 @@ export default function Main() {
 
         <Show when={state.is_create_new_line_modal_open}>
             <AddNewLineDialog />
+        </Show>
+
+        <Show when={state.is_edit_line_modal_open}>
+            <EditLineDialog />
         </Show>
         <img alt="" src="/screen1.png"/>
     </main>
@@ -328,6 +359,91 @@ function CreateNewPlaylistDialog() {
     </dialog>
   </>)
 }
+
+
+function EditLineDialog() {
+
+  const [pgn_error, set_pgn_error] = createSignal('')
+
+  const [{ linechess_state: state }, { linechess_actions: { set_open_edit_line, edit_line }}] = useState()
+
+  const close = () => set_open_edit_line(false)
+
+  const on_edit_line = async () => {
+
+    if (!$opening_line_name_text.checkValidity()) {
+      $opening_line_name_text.reportValidity()
+      return
+    }
+    let value = $opening_line_name_text.value
+
+    if (!$opening_line_pgn_text.checkValidity()) {
+      $opening_line_pgn_text.reportValidity()
+      return
+    }
+    let pgn_value = $opening_line_pgn_text.value
+
+
+    try {
+      set_pgn_error('')
+      await edit_line(value, pgn_value)
+      close()
+    } catch (e) {
+      if (e instanceof InvalidPGNException) {
+        set_pgn_error('Invalid PGN')
+      } else {
+        set_pgn_error('Failed editing line.')
+      }
+    }
+  }
+
+  const paste_pgn = () => {
+    navigator.clipboard.readText().then(text => {
+      $opening_line_pgn_text.value = text
+    })
+  }
+
+  let $opening_line_name_text!: HTMLInputElement
+  let $opening_line_pgn_text!: HTMLInputElement
+
+  onMount(() => {
+    $opening_line_name_text.focus()
+  })
+
+  return (<>
+    <dialog open={state.is_edit_line_modal_open}>
+      <div onClick={close} class='dialog-backdrop'></div>
+      <div class='add-new-line-dialog-content'>
+        <div class='panel'>
+          <div class='body'>
+            <div class='title'><div><MdOutlineCommit/> Edit Line </div><AiOutlineClose onClick={close}/></div>
+
+            <div class='input-group'>
+               <label for="opening_line_name">Edit Line Name</label>
+               <input minLength={3} required={true} ref={$opening_line_name_text} id="opening_line_name" type='text' placeholder="e.g. 3.e5 c5 Advanced Variation" value={state.selected_line?.name}></input>
+            </div>
+
+            <div class='input-group'>
+               <label for="opening_line_pgn">Edit Line PGN</label>
+               <input class='pgn' spellcheck="false" autocorrect="off" aria-invalid={!!pgn_error()} minLength={8} required={true} ref={$opening_line_pgn_text} id="opening_line_pgn" type='text' placeholder="e.g. 1.e4 e5 2. c4 c5 ..." value={state.selected_line?.pgn}></input>
+
+              <button onClick={paste_pgn} class='secondary'>Paste PGN</button>
+            </div>
+            <Show when={pgn_error()}>{error =>
+              <div class='error'>{error()}</div>
+            }</Show>
+          </div>
+
+          <div class='action'>
+            <button onClick={close} class='secondary'>Cancel</button>
+            <button type="submit" onClick={on_edit_line} class='primary'>Edit Line</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </>)
+}
+
 
 
 

@@ -254,6 +254,7 @@ export async function make_database(): Promise<DatabaseStore> {
                 book_id: edit.book_id ?? playlist.book_id,
                 name: edit.name ?? playlist.name,
                 nb_lines: edit.nb_lines ?? playlist.nb_lines,
+                selected_line: edit.selected_line ?? playlist.selected_line,
                 version: edit.version,
                 has_pending_writes: true,
                 created_at: playlist.created_at,

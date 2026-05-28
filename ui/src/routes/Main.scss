@@ -103,6 +103,45 @@ main.composition {
             }
     }
 
+    .books, .playlists {
+
+            .book, .playlist {
+                display: flex;
+
+                .long {
+                    flex: 1;
+                }
+
+                .actions {
+
+                    visibility: hidden;
+
+                    button {
+                        background: variables.$white0;
+                        border: none;
+                        border-radius: variables.$s1;
+                        font-size: variables.$m3;
+
+                        &:hover {
+                            background: variables.$white2;
+                        }
+
+                        &.delete:hover {
+                            background: variables.$red-15;
+                        }
+                }
+                }
+
+                &:hover {
+                    .actions {
+                        visibility: visible;
+                    }
+                }
+            }
+
+
+    }
+
     .books {
         .list {
             .book {
@@ -112,6 +151,15 @@ main.composition {
                 color: variables.$white2;
                 margin: variables.$s1;
                 padding: variables.$s2;
+
+                @include variables.no-select;
+                &:hover {
+                   background: variables.$grey1;
+                }
+
+                &.active {
+                   background: variables.$navy1;
+                }
 
                 .nb-playlists {
                     font-size: variables.$s3;
@@ -131,6 +179,17 @@ main.composition {
                 margin: variables.$s1;
                 padding: variables.$s2;
                 border: variables.$px solid variables.$purple-3;
+
+
+                @include variables.no-select;
+                
+                &:hover {
+                    background: variables.$purple-3;
+                }
+                
+                &.active {
+                    background: variables.$purple-2;
+                }
 
                 .nb-lines {
                     font-size: variables.$s3;
@@ -228,28 +287,40 @@ main.composition {
                             padding: variables.$s1;
                         }
                     }
+               }
 
-                    button {
-                        visibility: hidden;
+                .long {
+                    flex: 1;
+                }
 
-                        background: variables.$navy-1;
-                        border: none;
-                        border-radius: variables.$s0;
-                        font-size: variables.$m3;
+               .actions {
 
-                        &:hover {
-                            background: variables.$navy-2;
-                        }
+                display: flex;
+                gap: variables.$s1;
 
-                        &.delete:hover {
-                            background: variables.$red-15;
-                        }
+                button {
+                    visibility: hidden;
+
+                    background: variables.$navy-1;
+                    border: none;
+                    border-radius: variables.$s1;
+                    font-size: variables.$m3;
+
+                    &:hover {
+                        background: variables.$navy-2;
+                    }
+
+                    &.delete:hover {
+                        background: variables.$red-15;
                     }
                 }
 
-                &:hover .pgn button {
+                        }
+                 &:hover .actions button {
                     visibility: visible;
                 }
+
+
             }
         }
     }
@@ -434,10 +505,6 @@ main.composition {
 
 
                     border-bottom: variables.$px solid variables.$navy1;
-                }
-
-                .list-name {
-                    color: variables.$purple1;
                 }
 
                 .input-group {
