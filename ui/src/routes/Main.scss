@@ -129,7 +129,7 @@ main.composition {
                         &.delete:hover {
                             background: variables.$red-15;
                         }
-                }
+                    }
                 }
 
                 &:hover {
@@ -435,6 +435,11 @@ main.composition {
                         color: variables.$white0;
                         background: variables.$purple-3;
                     }
+
+                    &.delete {
+                        color: variables.$white0;
+                        background: variables.$red-1;
+                    }
                 }
             }
         }
@@ -546,6 +551,11 @@ main.composition {
                     &.primary {
                         color: variables.$white0;
                         background: variables.$navy-3;
+                    }
+
+                    &.delete {
+                        color: variables.$white0;
+                        background: variables.$red-1;
                     }
                 }
             }

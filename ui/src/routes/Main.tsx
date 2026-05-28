@@ -14,7 +14,7 @@ import type { LineId } from "../state/types";
 
 export default function Main() {
 
-  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, set_open_create_new_playlist, set_open_create_new_book, select_book, select_playlist, set_open_edit_line, select_line, delete_line }}] = useState()
+  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, set_open_create_new_playlist, set_open_create_new_book, select_book, select_playlist, set_open_edit_line, select_line, delete_line, set_open_edit_playlist, set_open_edit_book }}] = useState()
 
   const is_selected_book = createSelector(() => state.selected_book?.id)
   const is_selected_playlist = createSelector(() => state.selected_playlist?.id)
@@ -48,7 +48,7 @@ export default function Main() {
                               </div>
                               <div class='long'></div>
                               <div class='actions'>
-                                <button title="Edit"><TbOutlinePencilMinus /></button>
+                                <button onClick={() => set_open_edit_book(true)} title="Edit"><TbOutlinePencilMinus /></button>
                               </div>
                             </div>
                         }</For>
@@ -71,7 +71,7 @@ export default function Main() {
                               </div>
                               <div class='long'></div>
                               <div class='actions'>
-                                <button title="Edit"><TbOutlinePencilMinus /></button>
+                                <button onClick={() => set_open_edit_playlist(true)} title="Edit"><TbOutlinePencilMinus /></button>
                               </div>
                             </div>
                         }</For>
@@ -120,6 +120,12 @@ export default function Main() {
 
         <Show when={state.is_edit_line_modal_open}>
             <EditLineDialog />
+        </Show>
+        <Show when={state.is_edit_playlist_modal_open}>
+            <EditPlaylistDialog />
+        </Show>
+        <Show when={state.is_edit_book_modal_open}>
+            <EditBookDialog />
         </Show>
         <img alt="" src="/screen1.png"/>
     </main>
@@ -298,6 +304,71 @@ function CreateNewBookDialog() {
 }
 
 
+function EditBookDialog() {
+
+  const [{ linechess_state: state },{ linechess_actions: { set_open_edit_book, edit_book, delete_selected_book }}] = useState()
+
+  const close = () => set_open_edit_book(false)
+
+
+  const on_delete_book = async () => {
+    await delete_selected_book()
+    close()
+  }
+
+  const on_edit_book = async () => {
+
+    if (!$opening_name_text.checkValidity()) {
+      $opening_name_text.reportValidity()
+      return
+    }
+    let value = $opening_name_text.value
+    try {
+      await edit_book(value)
+    } catch (e) {
+      alert(e)
+    }
+    close()
+  }
+
+  const on_key_press = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      on_edit_book()
+    }
+
+  }
+
+  let $opening_name_text!: HTMLInputElement
+
+  onMount(() => {
+    $opening_name_text.focus()
+  })
+
+  return (<>
+    <dialog open={state.is_edit_book_modal_open}>
+      <div onClick={close} class='dialog-backdrop'></div>
+      <div class='create-new-book-dialog-content'>
+        <div class='panel'>
+          <div class='body'>
+            <div class='title'><div><BiRegularBookOpen/> Edit Book </div><AiOutlineClose onClick={close}/></div>
+
+            <div class='input-group'>
+               <label for="opening_name">Edit Book Title</label>
+               <input onkeypress={on_key_press} minLength={3} required={true} ref={$opening_name_text} id="opening_name" type='text' placeholder="e.g. 1.e4 Repertoire as White" value={state.selected_book?.name}></input>
+            </div>
+          </div>
+          <div class='action'>
+            <button onClick={close} class='secondary'>Cancel</button>
+            <button type="submit" onClick={on_edit_book} class='primary'>Edit Book</button>
+            <button type="submit" onClick={on_delete_book} class='delete'>Delete Book</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </>)
+}
+
+
 
 function CreateNewPlaylistDialog() {
 
@@ -353,6 +424,70 @@ function CreateNewPlaylistDialog() {
           <div class='action'>
             <button onClick={close} class='secondary'>Cancel</button>
             <button type="submit" onClick={save_playlist} class='primary'>Save Playlist</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </>)
+}
+
+
+function EditPlaylistDialog() {
+
+  const [{ linechess_state: state },{ linechess_actions: { set_open_edit_playlist, edit_playlist, delete_selected_playlist }}] = useState()
+
+  const close = () => set_open_edit_playlist(false)
+
+  const on_delete_playlist = async () => {
+    await delete_selected_playlist()
+    close()
+  }
+
+  const on_edit_playlist = async () => {
+
+    if (!$opening_name_text.checkValidity()) {
+      $opening_name_text.reportValidity()
+      return
+    }
+    let value = $opening_name_text.value
+    try {
+      await edit_playlist(value)
+    } catch (e) {
+      alert(e)
+    }
+    close()
+  }
+
+  const on_key_press = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      on_edit_playlist()
+    }
+
+  }
+
+  let $opening_name_text!: HTMLInputElement
+
+  onMount(() => {
+    $opening_name_text.focus()
+  })
+
+  return (<>
+    <dialog open={state.is_edit_playlist_modal_open}>
+      <div onClick={close} class='dialog-backdrop'></div>
+      <div class='create-new-playlist-dialog-content'>
+        <div class='panel'>
+          <div class='body'>
+            <div class='title'><div><HiOutlineSquare3Stack3d/> Edit Playlist </div><AiOutlineClose onClick={close}/></div>
+
+            <div class='input-group'>
+               <label for="opening_name">Edit Playlist Name</label>
+               <input onkeypress={on_key_press} minLength={3} required={true} ref={$opening_name_text} id="opening_name" type='text' placeholder="e.g. Najdorf Poisoned Pawns" value={state.selected_playlist?.name}></input>
+            </div>
+          </div>
+          <div class='action'>
+            <button onClick={close} class='secondary'>Cancel</button>
+            <button type="submit" onClick={on_edit_playlist} class='primary'>Edit Playlist</button>
+            <button type="submit" onClick={on_delete_playlist} class='delete'>Delete Playlist</button>
           </div>
         </div>
       </div>

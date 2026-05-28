@@ -6,13 +6,20 @@ import { createAsync } from "@solidjs/router"
 import { createMemo, createSignal } from "solid-js"
 import type { DashboardState } from "./dashboard_state"
 
+
+export class NoBookSelected extends Error {
+    constructor() {
+        super('No book selected')
+    }
+}
+
+
+
 export class NoLineSelected extends Error {
     constructor() {
         super('No line selected')
     }
 }
-
-
 
 export class NoPlaylistSelected extends Error {
     constructor() {
@@ -26,20 +33,28 @@ export type State = {
     is_create_new_playlist_modal_open: boolean
     is_create_new_book_modal_open: boolean
     is_create_new_line_modal_open: boolean
+    is_edit_line_modal_open: boolean
+    is_edit_playlist_modal_open: boolean
+    is_edit_book_modal_open: boolean
     books: LightBookModel[]
     selected_book?: BookModel
     selected_playlist?: PlaylistModel
     selected_line?: LineModel
     add_new_line_pgn?: string
-    is_edit_line_modal_open: boolean
 }
 
 
 export type Actions = {
+    delete_selected_book(): void
+    edit_book(name: string): Promise<void>
+    set_open_edit_book(v: boolean): void
     set_open_create_new_book(v: boolean): void
     create_book(name: string): Promise<BookId | undefined>
     select_book(id: BookId): void
 
+    delete_selected_playlist(): void
+    set_open_edit_playlist(v: boolean): void
+    edit_playlist(name: string): Promise<void>
     set_open_create_new_playlist(v: boolean): void
     create_playlist(name: string): Promise<PlaylistId | undefined>
     select_playlist(id: PlaylistId): void
@@ -60,6 +75,8 @@ type LinechessPersistedStore = {
     is_create_new_book_modal_open: boolean
     is_create_new_line_modal_open: boolean
     is_edit_line_modal_open: boolean
+    is_edit_playlist_modal_open: boolean
+    is_edit_book_modal_open: boolean
     selected_book_id: BookId | undefined
 }
 
@@ -82,6 +99,8 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
         is_create_new_book_modal_open: false,
         is_create_new_line_modal_open: false,
         is_edit_line_modal_open: false,
+        is_edit_playlist_modal_open: false,
+        is_edit_book_modal_open: false,
         selected_book_id: undefined
     }), { name: '.linechess.store.v3'})
 
@@ -166,6 +185,12 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
         },
         get is_edit_line_modal_open() {
             return store.is_edit_line_modal_open
+        },
+        get is_edit_playlist_modal_open() {
+            return store.is_edit_playlist_modal_open
+        },
+        get is_edit_book_modal_open() {
+            return store.is_edit_book_modal_open
         }
     }
 
@@ -179,8 +204,14 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
         set_open_create_new_line(v: boolean) {
             set_store('is_create_new_line_modal_open', v)
         },
-        async set_open_edit_line(v: boolean) {
+        set_open_edit_line(v: boolean) {
             set_store('is_edit_line_modal_open', v)
+        },
+        set_open_edit_playlist(v: boolean) {
+            set_store('is_edit_playlist_modal_open', v)
+        },
+        set_open_edit_book(v: boolean) {
+            set_store('is_edit_book_modal_open', v)
         },
         async create_book(name: string) {
 
@@ -192,6 +223,44 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_books(true)
             return res
+        },
+        async edit_book(name: string) {
+
+            let db = get_db()?.[1]
+            if (!db) {
+                return undefined
+            }
+            let  book = selected_book()
+            if (!book) {
+                throw new NoBookSelected()
+            }
+
+            await db.edit_book({
+                id: book.id,
+                version: book.version + 1,
+                updated_at: Date.now(),
+                name
+            })
+
+            set_fetch_selected_book(true)
+            set_fetch_books(true)
+        },
+        async delete_selected_book() {
+            let db = get_db()?.[1]
+            if (!db) {
+                return undefined
+            }
+
+            let book = selected_book()
+
+            if (!book) {
+                throw new NoBookSelected()
+            }
+
+            await db.delete_book(book.id)
+
+            set_fetch_selected_book(true)
+            set_fetch_books(true)
         },
         select_book(id: BookId) {
             set_store('selected_book_id', id)
@@ -210,6 +279,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
             let res = await db.add_playlist(book_id, name)
 
             set_fetch_selected_book(true)
+            set_fetch_books(true)
 
             return res
         },
@@ -230,6 +300,44 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
                 updated_at: Date.now()
             })
 
+            set_fetch_selected_book(true)
+        },
+        async delete_selected_playlist() {
+            let db = get_db()?.[1]
+            if (!db) {
+                return undefined
+            }
+
+            let playlist = selected_playlist()
+
+            if (!playlist) {
+                throw new NoPlaylistSelected()
+            }
+
+            await db.delete_playlist(playlist.id)
+
+            set_fetch_selected_book(true)
+            set_fetch_books(true)
+        },
+        async edit_playlist(name: string) {
+
+            let db = get_db()?.[1]
+            if (!db) {
+                return undefined
+            }
+            let  playlist = selected_playlist()
+            if (!playlist) {
+                throw new NoPlaylistSelected()
+            }
+
+            await db.edit_playlist({
+                id: playlist.id,
+                version: playlist.version + 1,
+                updated_at: Date.now(),
+                name
+            })
+
+            set_fetch_selected_playlist(true)
             set_fetch_selected_book(true)
         },
         async edit_line(name?: string, pgn?: string) {
