@@ -1,0 +1,478 @@
+@use '../variables';
+
+main.composition {
+
+    display: grid;
+
+    grid-template-areas: 'panel'
+                         'lines'
+                         'playlist'
+                         'books';
+    gap: variables.$s2;
+
+    @include variables.respond-to("lg") {
+        grid-template-areas: 'panel panel'
+                             'books lines'
+                             'playlist lines';
+        grid-template-columns: 2fr 3fr;
+    }
+    
+    .panel {
+        grid-area: panel;
+    }
+     .books {
+        grid-area: books;
+    }
+    .playlist {
+        grid-area: playlist;
+    }
+     .lines {
+        grid-area: lines;
+    }
+    
+
+    &> .panel {
+        @include variables.rounded-shadow;
+        padding: variables.$s2;
+        margin-top: variables.$s2;
+        .title {
+            display: flex;
+            align-items: center;
+
+            color: variables.$navy2;
+            text-transform: uppercase;
+
+            @include variables.google-sans-flex(700);
+            @include variables.looser;
+
+            &> svg {
+                font-size: variables.$m3;
+                color: variables.$green-2;
+            }
+        }
+
+        .info {
+            color: variables.$grey-1;
+            @include variables.google-sans-flex(300);
+        }
+    }
+
+
+
+    .books, .playlists {
+
+        @include variables.rounded-md;
+        padding: variables.$s0;
+        background: variables.$grey-1;
+
+        .header {
+                display: flex;
+                @include variables.google-sans-flex(500);
+                align-items: center;
+                color: variables.$grey-3;
+
+                border-bottom: variables.$px solid variables.$black2;
+                margin: variables.$m1;
+                padding: variables.$m1;
+                gap: variables.$s2;
+        
+                .title {
+                    flex: 1;
+                    text-transform: uppercase;
+                }
+
+                &> svg {
+                    font-size: variables.$l0;
+                    color: variables.$navy-6;
+                }
+            }
+
+            .list {
+                overflow-y: auto;
+                height: 18em;
+            }
+    }
+
+    .books {
+        .list {
+            .book {
+                @include variables.google-sans-flex(300);
+                border-radius: variables.$s2;
+                background: variables.$grey2;
+                color: variables.$white2;
+                margin: variables.$s1;
+                padding: variables.$s2;
+
+                .nb-playlists {
+                    font-size: variables.$s3;
+                   color: variables.$grey1;
+                }
+            }
+        }
+    }
+
+
+    .playlists {
+        .list {
+            .playlist {
+                @include variables.google-sans-flex(300);
+                border-radius: variables.$s2;
+                color: variables.$white2;
+                margin: variables.$s1;
+                padding: variables.$s2;
+                border: variables.$px solid variables.$purple-3;
+
+                .nb-lines {
+                    font-size: variables.$s3;
+                   color: variables.$grey2;
+                }
+            }
+        }
+    }
+
+    .playlists {
+        .header {
+        &>svg {
+                color: variables.$purple-3;
+            }
+        }
+    }
+
+
+    .lines {
+
+        @include variables.rounded-md;
+        padding: variables.$s0;
+        background: variables.$grey-1;
+
+        .header {
+                display: flex;
+                @include variables.google-sans-flex(500);
+                align-items: center;
+                color: variables.$white1;
+
+                border-bottom: variables.$px solid variables.$black2;
+                margin: variables.$m1;
+                padding: variables.$m1;
+                gap: variables.$s2;
+        
+                .title {
+                    flex: 1;
+                    text-transform: uppercase;
+                }
+
+                &> svg {
+                    font-size: variables.$l0;
+                    color: variables.$navy-6;
+                }
+            }
+    }
+
+
+    .lines {
+        .list {
+            overflow-y: auto;
+            height: 40em;
+            .line {
+                display: flex;
+                flex-flow: column;
+
+                margin: variables.$s2;
+                border-radius: variables.$s3;
+                background: variables.$grey2;
+                color: variables.$white0;
+                @include variables.google-sans-flex(500);
+
+
+                .title {
+                    padding: variables.$s2;
+                    display: flex;
+                    gap: variables.$s2;
+                    .index {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        border-radius: 50%;
+                        background: variables.$navy1;
+                        width: variables.$m3;
+                        aspect-ratio: 1;
+                    }
+                }
+
+                .pgn {
+                    display: flex;
+                    margin: variables.$s2;
+                    align-items: center;
+                    gap: variables.$s1;
+
+                    .moves {
+                        display: flex;
+                        flex-wrap: wrap;
+
+                        border-radius: variables.$m1;
+                        background: variables.$navy2;
+                        color: variables.$navy-6;
+                        padding: variables.$s1;
+
+                        .move {
+                            padding: variables.$s1;
+                        }
+                    }
+
+                    button {
+                        visibility: hidden;
+
+                        background: variables.$navy-1;
+                        border: none;
+                        border-radius: variables.$s0;
+                        font-size: variables.$m3;
+
+                        &:hover {
+                            background: variables.$navy-2;
+                        }
+
+                        &.delete:hover {
+                            background: variables.$red-15;
+                        }
+                    }
+                }
+
+                &:hover .pgn button {
+                    visibility: visible;
+                }
+            }
+        }
+    }
+
+}
+
+
+main.composition {
+ 
+    .create-new-playlist-dialog-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100%;
+
+        .panel {
+            position: relative;
+            display: flex;
+            flex-flow: column;
+
+            overflow: hidden;
+
+            width: 100%;
+            max-width: variables.$xl4;
+            border: variables.$px solid variables.$white0;
+            background: variables.$navy2;
+            border-radius: variables.$m2;
+
+            position: relative;
+            .body {
+                display: flex;
+                flex-flow: column;
+
+                gap: variables.$s3;
+
+                margin-bottom: variables.$s1;
+                .title {
+                    @include variables.google-sans-flex(700);
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: variables.$s3;
+                    color: variables.$white0;
+
+                    & div {
+                        display: flex;
+                        align-items: center;
+                        gap: variables.$s2;
+                        svg {
+                            color: variables.$purple-3;
+                            font-size: variables.$m3;
+                        }
+
+
+                    }
+
+                    svg {
+                        color: variables.$white1;
+                        @include variables.no-select;
+
+                        &:hover {
+                            color: variables.$white0;
+                        }
+                    }
+
+
+
+                    border-bottom: variables.$px solid variables.$navy1;
+                }
+
+                .list-name {
+                    color: variables.$purple1;
+                }
+
+                .input-group {
+                    display: flex;
+                    flex-flow: column;
+                    gap: variables.$s1;
+                    margin: variables.$s2;
+
+                    label {
+                        @include variables.google-sans-flex(500);
+                        color: variables.$grey-1;
+                        font-size: variables.$m15;
+                        text-transform: uppercase;
+                        line-height: variables.$m2;
+                    }
+
+                    .error {
+                        color: variables.$red1;
+                        font-size: variables.$s3;
+                    }
+
+                }
+            }
+
+            .action {
+                display: flex;
+                gap: variables.$m1;
+                justify-content: flex-end;
+                border-top: variables.$px solid variables.$navy1;
+                padding: variables.$s3;
+
+
+                button {
+                    @include variables.google-sans-flex(500);
+
+                    border-radius: variables.$s1;
+                    margin-inline: variables.$m1;
+
+                    &.primary {
+                        color: variables.$white0;
+                        background: variables.$purple-3;
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+
+
+main.composition {
+ 
+    .create-new-book-dialog-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100%;
+
+        .panel {
+            position: relative;
+            display: flex;
+            flex-flow: column;
+
+            overflow: hidden;
+
+            width: 100%;
+            max-width: variables.$xl4;
+            border: variables.$px solid variables.$white0;
+            background: variables.$navy2;
+            border-radius: variables.$m2;
+
+            position: relative;
+            .body {
+                display: flex;
+                flex-flow: column;
+
+                gap: variables.$s3;
+
+                margin-bottom: variables.$s1;
+                .title {
+                    @include variables.google-sans-flex(700);
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: variables.$s3;
+                    color: variables.$white0;
+
+                    & div {
+                        display: flex;
+                        align-items: center;
+                        gap: variables.$s2;
+                        svg {
+                            color: variables.$navy-3;
+                            font-size: variables.$m3;
+                        }
+
+
+                    }
+
+                    svg {
+                        color: variables.$white1;
+                        @include variables.no-select;
+
+                        &:hover {
+                            color: variables.$white0;
+                        }
+                    }
+
+
+
+                    border-bottom: variables.$px solid variables.$navy1;
+                }
+
+                .list-name {
+                    color: variables.$purple1;
+                }
+
+                .input-group {
+                    display: flex;
+                    flex-flow: column;
+                    gap: variables.$s1;
+                    margin: variables.$s2;
+
+                    label {
+                        @include variables.google-sans-flex(500);
+                        color: variables.$grey-1;
+                        font-size: variables.$m15;
+                        text-transform: uppercase;
+                        line-height: variables.$m2;
+                    }
+
+                    .error {
+                        color: variables.$red1;
+                        font-size: variables.$s3;
+                    }
+
+                }
+            }
+
+            .action {
+                display: flex;
+                gap: variables.$m1;
+                justify-content: flex-end;
+                border-top: variables.$px solid variables.$navy1;
+                padding: variables.$s3;
+
+
+                button {
+                    @include variables.google-sans-flex(500);
+
+                    border-radius: variables.$s1;
+                    margin-inline: variables.$m1;
+
+                    &.primary {
+                        color: variables.$white0;
+                        background: variables.$navy-3;
+                    }
+                }
+            }
+        }
+    }
+
+}

@@ -1,5 +1,53 @@
 @use 'variables';
 
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: variables.$white0;
+  border-radius: variables.$s2;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: variables.$navy1;
+  border-radius: variables.$s2;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: variables.$black2;
+}
+
+body {
+    background: variables.$white0;
+    color: variables.$black0;
+
+    --main-max-width: 1300px;
+}
+
+
+
+.main-wrapper {
+    display: grid;
+
+    grid-template-areas: '. .  main  . .';
+                         
+
+    grid-template-columns: variables.$s2 1fr minmax(auto, var(--main-max-width)) 1fr variables.$s2;
+
+
+    main {
+        grid-area: main;
+    }
+}
+
+
 header {
 
     --header-height: 4.2em;
@@ -185,7 +233,7 @@ header {
                     @include variables.responsive-font(8, 14);
                     color: variables.$grey-1;
                     text-transform: uppercase;
-                    @include variables.loose;
+                    @include variables.looser;
                 }
 
             }
@@ -195,7 +243,7 @@ header {
                 display: flex;
 
                 min-width: variables.$l2;
-                @include variables.responsive-font(8, 14);
+                @include variables.responsive-font(11, 14);
                 margin-inline: variables.$s3;
                 color: variables.$white2;
                 background: variables.$navy2;
@@ -270,6 +318,112 @@ header {
             &.logout:hover {
                background: variables.$red1;
             }
+        }
+    }
+}
+
+button {
+
+    @include variables.no-select;
+}
+
+button.primary {
+    display: flex;
+    align-items: center;
+    border-radius: variables.$s2;
+    border: none;
+    background: variables.$navy1;
+    color: variables.$white2;
+    gap: variables.$s1;
+    padding: variables.$s2 variables.$s3;
+
+    @include variables.no-select;
+
+    &:hover {
+       background: variables.$navy15;
+    }
+
+}
+
+
+
+button.coherence {
+    display: flex;
+    align-items: center;
+    border-radius: variables.$s2;
+    border: variables.$px solid variables.$navy-3;
+    background: variables.$navy-2;
+    color: variables.$black2;
+    gap: variables.$s2;
+    padding: variables.$s2 variables.$s3;
+
+    @include variables.no-select;
+
+    &:hover {
+       background: variables.$navy-25;
+    }
+
+}
+
+
+button.secondary {
+    display: flex;
+    align-items: center;
+    border-radius: variables.$s0;
+    border: variables.$px solid variables.$navy-3;
+    background: variables.$navy-3-a;
+    color: variables.$navy-6;
+
+    @include variables.no-select;
+
+    &:hover {
+       background: variables.$navy-3;
+    }
+
+    &.purple {
+        border: variables.$px solid variables.$purple-3;
+        background: variables.$purple-3-a;
+        color: variables.$purple-6;
+
+        &:hover {
+           background: variables.$purple-3;
+        }
+    }
+}
+
+main {
+    dialog {
+
+        @include variables.fixed-inset;
+        width: auto;
+        height: auto;
+        background-color: variables.$backdrop-color;
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+
+        & .dialog-backdrop {
+            @include variables.fixed-inset;
+        }
+    }
+}
+
+
+main {
+    input[type='text'] {
+        background: variables.$navy2;
+        border: none;
+        padding: variables.$m0;
+        border-radius: variables.$m0;
+
+        color: variables.$white1;
+        @include variables.google-sans-flex(500);
+
+        &::placeholder {
+           color: variables.$grey2;
+        }
+
+        &:invalid {
+            border: variables.$px dashed variables.$red1;
         }
     }
 }

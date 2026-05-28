@@ -56,12 +56,20 @@ $green4: color.adjust($green0, $lightness: -40%);
 
 
 $grey0: color.adjust(
-          color.mix(grey, blue, $weight: 80%), $saturation: -3%, $lightness: -3%);
+          color.mix(grey, blue, $weight: 80%), $saturation: -15%, $lightness: -3%);
 $grey-1: color.adjust($grey0, $lightness: 10%);
+$grey-2: color.adjust($grey0, $lightness: 20%);
+$grey-3: color.adjust($grey0, $lightness: 30%);
+$grey1: color.adjust($grey0, $lightness: -10%);
+$grey2: color.adjust($grey0, $lightness: -20%);
 
 $navy0: color.adjust(color.mix(navy, cyan, 87%), $saturation: -30%);
+$navy-6: color.adjust($navy0, $lightness: 45%, $hue: -10%, $saturation: 100%);
+$navy-5-a: color.adjust($navy0, $lightness: 50%, $alpha: -0.7);
 $navy-5: color.adjust($navy0, $lightness: 50%);
 $navy-4: color.adjust($navy0, $lightness: 40%);
+$navy-35: color.adjust($navy0, $lightness: 35%);
+$navy-3-a: color.adjust($navy0, $lightness: 30%, $alpha: -0.7);
 $navy-3: color.adjust($navy0, $lightness: 30%);
 $navy-25: color.adjust($navy0, $lightness: 25%);
 $navy-2: color.adjust($navy0, $lightness: 20%);
@@ -81,14 +89,20 @@ $navy5: color.adjust($navy0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
 
 
 
+$purple0: color.adjust(color.mix(purple, blue, 87%), $saturation: -30%);
+$purple-6: color.adjust($purple0, $lightness: 45%, $hue: 10%, $saturation: 90%);
+$purple-3-a: color.adjust($purple0, $lightness: 20%, $alpha: -0.9);
+$purple-3: color.adjust($purple0, $lightness: 30%);
+$purple-2: color.adjust($purple0, $lightness: 20%);
+$purple-1: color.adjust($purple0, $lightness: 10%);
+$purple1: color.adjust($purple0,  $lightness: -10%);
 
 
-
-$white0: color.adjust(color.mix(white, yellow, $weight: 99%));
-$white1: color.adjust($white0, $lightness: -5%);
-$white2: color.adjust($white0, $lightness: -10%);
-$white3: color.adjust($white0, $lightness: -15%);
-$white5: color.adjust($white0, $lightness: -20%);
+$white0: color.adjust(color.mix(white, yellow, $weight: 99.99%));
+$white1: color.adjust($white0, $lightness: -10%);
+$white2: color.adjust($white0, $lightness: -20%);
+$white3: color.adjust($white0, $lightness: -30%);
+$white5: color.adjust($white0, $lightness: -40%);
 $black0: color.adjust(
           color.mix(black, navy, $weight: 80%), $saturation: -3%, $lightness: -30%);
 $black025: color.adjust($black0, $lightness:  2.5%);
@@ -112,6 +126,7 @@ $red-4: color.adjust($red0, $lightness: 40%);
 $red-3: color.adjust($red0, $lightness: 30%);
 $red-25: color.adjust($red0, $lightness: 25%);
 $red-2: color.adjust($red0, $lightness: 20%);
+$red-15: color.adjust($red0, $lightness: 15%);
 $red-1: color.adjust($red0, $lightness: 10%);
 $red-05: color.adjust($red0,$lightness:  5%);
 $red05: color.adjust($red0, $lightness: -5%);
@@ -126,10 +141,24 @@ $red4: color.adjust($red0,  $lightness: -40%);
 $red45: color.adjust($red0,  $lightness: -45%);
 $red5: color.adjust($red0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
 
+@mixin rounded-md {
+    border-radius: $s2;
+    border: $px solid $navy2;
+}
+
+
+
 @mixin rounded {
     border-radius: $s0;
-    border: 1px solid $black2;
+    border: $px solid $navy2;
 }
+
+@mixin rounded-shadow {
+    border-radius: $s0;
+    box-shadow: 0px 0px 1px $navy2;
+}
+
+
 
 @mixin no-select {
     user-select: none;
@@ -190,6 +219,9 @@ $breakpoints: (
     letter-spacing: -0.025em;
 }
 @mixin loose {
+    letter-spacing: 0.05em;
+}
+@mixin looser {
     letter-spacing: 0.1em;
 }
 

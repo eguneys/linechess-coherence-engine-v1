@@ -88,7 +88,7 @@ const Layout = (props: { children?: JSX.Element }) => {
         <div onClick={logout} class='link logout'><MdSharpPower_settings_new/> Logout</div>
       </div>
     </header>
-    <div class='main-wrap'>
+    <div class='main-wrapper'>
       {props.children}
     </div>
     <footer></footer>

@@ -1,0 +1,332 @@
+import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
+import { gen_id, type Book, type BookId, type Line, type LineId, type Playlist, type PlaylistId, type Move, type MoveId, type BookEdit, type PlaylistEdit, type LineEdit, type PendingMutationId, type AppMutation } from './types'
+
+class BookNotFoundError extends Error {
+    constructor(id: BookId) {
+        super(`Book not found ${id}`)
+    }
+}
+class PlaylistNotFoundError extends Error {
+    constructor(id: PlaylistId) {
+        super(`Playlist not found ${id}`)
+    }
+}
+class LineNotFoundError extends Error {
+    constructor(id: LineId) {
+        super(`Line not found ${id}`)
+    }
+}
+
+
+
+
+interface LinechessDB extends DBSchema {
+    books: {
+        key: BookId
+        value: Book
+    }
+    playlists: {
+        key: PlaylistId
+        value: Playlist
+        indexes: { 'by_book_id': BookId }
+    }
+    lines: {
+        key: LineId
+        value: Line
+        indexes: { 'by_playlist_id': PlaylistId }
+    }
+    moves: {
+        key: MoveId
+        value: Move
+        indexes: { 'by_line_id': LineId }
+    },
+    pending_mutations: {
+        key: PendingMutationId
+        value: AppMutation
+    }
+}
+
+export type DatabaseState = {
+    get_books(): Promise<Book[]>
+    get_book_by_id(id: BookId): Promise<Book | undefined>
+    get_playlists_by_book_id(book: BookId): Promise<Playlist[]>
+    get_playlist_by_id(id: PlaylistId): Promise<Playlist | undefined>
+    get_lines_by_playlist_id(playlist_id: PlaylistId): Promise<Line[]>
+    get_line_by_id(id: LineId): Promise<Line | undefined>
+    get_moves_by_line_id(id: LineId): Promise<Move[]>
+    get_pending_mutations(): Promise<AppMutation[]>
+}
+
+export type DatabaseActions = {
+    create_book(name: string): Promise<BookId>
+    edit_book(book: BookEdit): Promise<void>
+    delete_book(id: BookId): Promise<void>
+    create_playlist(book_id: BookId, name: string): Promise<PlaylistId>
+    edit_playlist(playlist: PlaylistEdit): Promise<void>
+    delete_playlist(id: PlaylistId): Promise<void>
+    create_line(playlist_id: PlaylistId, name: string, pgn: string): Promise<LineId>
+    edit_line(line: LineEdit): Promise<void>
+    delete_line(id: LineId): Promise<void>
+    create_moves(moves: Move[]): Promise<void>
+    delete_moves(id: LineId): Promise<void>
+    delete_pending_mutation(id: PendingMutationId): Promise<void>
+}
+
+export type DatabaseStore = [DatabaseState, DatabaseActions]
+
+const VERSION = 1
+
+export async function make_database(): Promise<DatabaseStore> {
+
+    const db = await openDB<LinechessDB>('linechess-db', VERSION, {
+        upgrade(db) {
+            create_tables(db)
+        }
+    })
+
+
+    let state = {
+        get_books() {
+            return db.getAll('books')
+        },
+        get_book_by_id(id: BookId) {
+            return db.get('books', id)
+        },
+        get_playlists_by_book_id(book_id: BookId) {
+            return db.getAllFromIndex('playlists', 'by_book_id', book_id)
+        },
+        get_playlist_by_id(id: PlaylistId) {
+            return db.get('playlists', id)
+        },
+        get_lines_by_playlist_id(playlist_id: PlaylistId) {
+            return db.getAllFromIndex('lines', 'by_playlist_id', playlist_id)
+        },
+        get_line_by_id(id: LineId) {
+            return db.get('lines', id)
+        },
+        get_moves_by_line_id(id: LineId) {
+            return db.getAllFromIndex('moves', 'by_line_id', id)
+        },
+        get_pending_mutations() {
+            return db.getAll('pending_mutations')
+        }
+    }
+
+    let actions = {
+        async create_book(name: string) {
+            let created_at = Date.now()
+            let value: Book = {
+                id: gen_id(),
+                name,
+
+                version: 1,
+                has_pending_writes: false,
+                created_at,
+                updated_at: created_at
+            }
+            let res = await db.put('books', value)
+
+
+            await db.put('pending_mutations', {
+                type: 'book.create',
+                payload: value
+            })
+
+            return res
+        },
+        async delete_book(id: BookId) {
+            let res =  await db.delete('books', id)
+
+            await db.put('pending_mutations', {
+                type: 'book.delete',
+                payload: id
+            })
+
+            return res
+        },
+        async edit_book(edit: BookEdit) {
+            let book = await db.get('books', edit.id)
+            if (!book) {
+                throw new BookNotFoundError(edit.id)
+            }
+            await db.put('books', {
+                id: book.id,
+                name: edit.name ?? book.name,
+                version: book.version + 1,
+                has_pending_writes: true,
+                created_at: book.created_at,
+                updated_at: Date.now()
+            })
+
+            await db.put('pending_mutations', {
+                type: 'book.edit',
+                payload: edit
+            })
+
+        },
+        async create_playlist(book_id: BookId, name: string) {
+            let created_at = Date.now()
+            let value: Playlist = {
+                id: gen_id(),
+                name,
+                book_id,
+
+                version: 1,
+                has_pending_writes: false,
+                created_at,
+                updated_at: created_at
+            }
+            let res = await db.put('playlists', value)
+
+            await db.put('pending_mutations', {
+                type: 'playlist.create',
+                payload: value
+            })
+
+            return res
+        },
+        async delete_playlist(id: PlaylistId) {
+            let res = await db.delete('playlists', id)
+
+            await db.put('pending_mutations', {
+                type: 'playlist.delete',
+                payload: id
+            })
+
+            return res
+        },
+        async edit_playlist(edit: PlaylistEdit) {
+            let playlist = await db.get('playlists', edit.id)
+            if (!playlist) {
+                throw new PlaylistNotFoundError(edit.id)
+            }
+            await db.put('playlists', {
+                id: playlist.id,
+                book_id: edit.book_id ?? playlist.book_id,
+                name: edit.name ?? playlist.name,
+                version: playlist.version + 1,
+                has_pending_writes: true,
+                created_at: playlist.created_at,
+                updated_at: Date.now()
+            })
+
+            await db.put('pending_mutations', {
+                type: 'playlist.edit',
+                payload: edit
+            })
+        },
+        async create_line(playlist_id: PlaylistId, name: string, pgn: string) {
+            let created_at = Date.now()
+            let value: Line = {
+                id: gen_id(),
+                playlist_id,
+                pgn,
+                name,
+                version: 1,
+                has_pending_writes: false,
+                created_at,
+                updated_at: created_at
+            }
+
+            let res = await db.put('lines', value)
+
+            await db.put('pending_mutations', {
+                type: 'line.create',
+                payload: value
+            })
+
+            return res
+        },
+        async delete_line(id: LineId) {
+            let res = await db.delete('lines', id)
+
+            await db.put('pending_mutations', {
+                type: 'line.delete',
+                payload: id
+            })
+
+            return res
+        },
+        async edit_line(edit: LineEdit) {
+            let line = await db.get('lines', edit.id)
+            if (!line) {
+                throw new LineNotFoundError(edit.id)
+            }
+            await db.put('lines', {
+                id: line.id,
+                playlist_id: edit.playlist_id ?? line.playlist_id,
+                name: edit.name ?? line.name,
+                pgn: edit.pgn ?? line.pgn,
+                version: line.version + 1,
+                has_pending_writes: true,
+                created_at: line.created_at,
+                updated_at: Date.now()
+            })
+
+            await db.put('pending_mutations', {
+                type: 'line.edit',
+                payload: edit
+            })
+
+        },
+        async create_moves(moves: Move[]) {
+
+            const tx = db.transaction('moves', 'readwrite')
+
+            await Promise.all([
+                ...moves.map(async move =>
+                    await tx.store.put(move)
+                ),
+            ])
+
+            await tx.done
+        },
+        async delete_moves(id: LineId) {
+            const tx = db.transaction('moves', 'readwrite')
+            for await (const cursor of tx.store.iterate(id)) {
+                await cursor.delete()
+            }
+            await tx.done
+        },
+        async delete_pending_mutation(id: PendingMutationId) {
+            return await db.delete('pending_mutations', id)
+        }
+    }
+
+    return [state, actions]
+}
+
+
+function create_tables(db: IDBPDatabase<LinechessDB>) {
+    if (!db.objectStoreNames.contains('books')) {
+
+        db.createObjectStore('books', {
+            keyPath: 'id',
+        })
+    }
+
+    if (!db.objectStoreNames.contains('playlists')) {
+        const playlists_store = db.createObjectStore('playlists', {
+            keyPath: 'id',
+        })
+
+        playlists_store.createIndex('by_book_id', 'book_id')
+    }
+
+ 
+    if (!db.objectStoreNames.contains('lines')) {
+        const line_store = db.createObjectStore('lines', {
+            keyPath: 'id',
+        })
+
+        line_store.createIndex('by_playlist_id', 'playlist_id')
+    }
+
+    if (!db.objectStoreNames.contains('moves')) {
+        let move_store = db.createObjectStore('moves', {
+            keyPath: 'id'
+        })
+        
+        move_store.createIndex('by_line_id', 'line_id')
+    }
+}
