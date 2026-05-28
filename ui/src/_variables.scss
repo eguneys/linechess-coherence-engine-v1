@@ -64,7 +64,7 @@ $grey1: color.adjust($grey0, $lightness: -10%);
 $grey2: color.adjust($grey0, $lightness: -20%);
 
 $navy0: color.adjust(color.mix(navy, cyan, 87%), $saturation: -30%);
-$navy-6: color.adjust($navy0, $lightness: 45%, $hue: -10%, $saturation: 100%);
+$navy-6: color.adjust($navy0, $lightness: 45%, $hue: -10deg, $saturation: 100%);
 $navy-5-a: color.adjust($navy0, $lightness: 50%, $alpha: -0.7);
 $navy-5: color.adjust($navy0, $lightness: 50%);
 $navy-4: color.adjust($navy0, $lightness: 40%);
@@ -90,7 +90,7 @@ $navy5: color.adjust($navy0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
 
 
 $purple0: color.adjust(color.mix(purple, blue, 87%), $saturation: -30%);
-$purple-6: color.adjust($purple0, $lightness: 45%, $hue: 10%, $saturation: 90%);
+$purple-6: color.adjust($purple0, $lightness: 45%, $hue: 10deg, $saturation: 90%);
 $purple-3-a: color.adjust($purple0, $lightness: 20%, $alpha: -0.9);
 $purple-3: color.adjust($purple0, $lightness: 30%);
 $purple-2: color.adjust($purple0, $lightness: 20%);

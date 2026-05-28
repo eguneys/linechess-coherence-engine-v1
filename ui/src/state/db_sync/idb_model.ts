@@ -11,8 +11,10 @@ export type LightBookModel = {
 
 export type BookModel = {
     id: BookId
+    version: number
     name: string
     playlists: LightPlaylistModel[]
+    selected_playlist?: PlaylistId
 }
 
 
@@ -25,9 +27,11 @@ export type LightPlaylistModel = {
 
 export type PlaylistModel = {
     id: PlaylistId
+    version: number
     book_id: BookId
     name: string
     lines: LightLineModel[]
+    selected_line?: LineId
 }
 
 export type LightLineModel = {
@@ -38,6 +42,7 @@ export type LightLineModel = {
 
 export type LineModel = {
     id: LineId
+    version: number
     playlist_id: PlaylistId
     name: string
     pgn: string
@@ -46,6 +51,7 @@ export type LineModel = {
 
 export type LineModelWithPlaylist = {
     id: LineId
+    version: number
     playlist_id: PlaylistId
     name: string
     pgn: string
@@ -105,6 +111,7 @@ export async function make_idb_model(): Promise<Idb_Store> {
             let res: BookModel = {
                 id: book.id,
                 name: book.name,
+                version: book.version,
                 playlists: playlists.map(_ => _)
             }
 
@@ -122,6 +129,7 @@ export async function make_idb_model(): Promise<Idb_Store> {
             let res: PlaylistModel = {
                 id: list.id,
                 book_id: list.book_id,
+                version: list.version,
                 name: list.name,
                 lines: lines.map(_ => _)
             }
@@ -141,6 +149,7 @@ export async function make_idb_model(): Promise<Idb_Store> {
             return {
                 id: line.id,
                 playlist_id: line.playlist_id,
+                version: line.version,
                 name: line.name,
                 pgn: line.pgn,
                 moves

@@ -44,6 +44,7 @@ export type BookEdit = {
     id: BookId
     version: number
     name?: string
+    selected_playlist?: PlaylistId
     updated_at: number
 }
 
@@ -61,6 +62,7 @@ export type PlaylistEdit = {
     version: number
     book_id?: BookId
     name?: string
+    selected_line?: LineId
     updated_at: number
 }
 
@@ -89,6 +91,7 @@ export type BookId = string
 export type Book = {
     id: BookId
     name: string
+    selected_playlist?: PlaylistId
     created_at: Timestamp
     updated_at: Timestamp
     deleted_at?: Timestamp
@@ -103,6 +106,7 @@ export type Playlist = {
     id: PlaylistId
     book_id: BookId
     name: string
+    selected_line?: LineId
     created_at: Timestamp
     updated_at: Timestamp
     deleted_at?: Timestamp

@@ -132,7 +132,6 @@ export async function make_database(): Promise<DatabaseStore> {
             }
             return res
         }
-
     }
 
     let actions = {
@@ -183,11 +182,13 @@ export async function make_database(): Promise<DatabaseStore> {
                 updated_at: edit.updated_at
             })
 
-            await db.put('pending_mutations', {
-                id: gen_id(),
-                type: 'book.edit',
-                payload: edit
-            })
+            if (book.version !== edit.version) {
+                await db.put('pending_mutations', {
+                    id: gen_id(),
+                    type: 'book.edit',
+                    payload: edit
+                })
+            }
 
         },
         async create_playlist(book_id: BookId, name: string) {
@@ -228,6 +229,7 @@ export async function make_database(): Promise<DatabaseStore> {
             if (!playlist) {
                 throw new PlaylistNotFoundError(edit.id)
             }
+
             await db.put('playlists', {
                 id: playlist.id,
                 book_id: edit.book_id ?? playlist.book_id,
@@ -238,11 +240,13 @@ export async function make_database(): Promise<DatabaseStore> {
                 updated_at: edit.updated_at
             })
 
-            await db.put('pending_mutations', {
-                id: gen_id(),
-                type: 'playlist.edit',
-                payload: edit
-            })
+            if (playlist.version !== edit.version) {
+                await db.put('pending_mutations', {
+                    id: gen_id(),
+                    type: 'playlist.edit',
+                    payload: edit
+                })
+            }
         },
         async create_line(playlist_id: PlaylistId, name: string, pgn: string) {
             let created_at = Date.now()
@@ -283,6 +287,7 @@ export async function make_database(): Promise<DatabaseStore> {
             if (!line) {
                 throw new LineNotFoundError(edit.id)
             }
+
             await db.put('lines', {
                 id: line.id,
                 playlist_id: edit.playlist_id ?? line.playlist_id,
@@ -294,11 +299,13 @@ export async function make_database(): Promise<DatabaseStore> {
                 updated_at: edit.updated_at
             })
 
-            await db.put('pending_mutations', {
-                id: gen_id(),
-                type: 'line.edit',
-                payload: edit
-            })
+            if (line.version !== edit.version) {
+                await db.put('pending_mutations', {
+                    id: gen_id(),
+                    type: 'line.edit',
+                    payload: edit
+                })
+            }
 
         },
         async create_moves(moves: Move[]) {
