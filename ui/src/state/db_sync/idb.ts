@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
-import { gen_id, type Book, type BookId, type Line, type LineId, type Playlist, type PlaylistId, type Move, type MoveId, type BookEdit, type PlaylistEdit, type LineEdit, type PendingMutationId, type AppMutation, type LineAdd, type PlaylistAdd, type BookAdd, type SyncState } from './types'
+import { gen_id, type Book, type BookId, type Line, type LineId, type Playlist, type PlaylistId, type Move, type MoveId, type BookEdit, type PlaylistEdit, type LineEdit, type PendingMutationId, type AppMutation, type LineAdd, type PlaylistAdd, type BookAdd, type SyncState, Sync_State_One_Id } from './types'
 
 class BookNotFoundError extends Error {
     constructor(id: BookId) {
@@ -22,7 +22,7 @@ class LineNotFoundError extends Error {
 
 interface LinechessDB extends DBSchema {
     sync_state: {
-        key: 'sync_state_id_1'
+        key: Sync_State_One_Id,
         value: SyncState
     },
     books: {
@@ -122,6 +122,7 @@ export async function make_database(): Promise<DatabaseStore> {
 
             if (!res) {
                 let value: SyncState = {
+                    id: Sync_State_One_Id,
                     pending_writes: false,
                     needs_pull: false,
                     sync_in_progress: false,
@@ -140,7 +141,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let value: Book = {
                 id: gen_id(),
                 name,
-
+                nb_playlists: 0,
                 version: 1,
                 has_pending_writes: true,
                 created_at,
@@ -176,6 +177,7 @@ export async function make_database(): Promise<DatabaseStore> {
             await db.put('books', {
                 id: book.id,
                 name: edit.name ?? book.name,
+                nb_playlists: edit.nb_playlists ?? book.nb_playlists,
                 version: edit.version,
                 has_pending_writes: true,
                 created_at: book.created_at,
@@ -197,13 +199,18 @@ export async function make_database(): Promise<DatabaseStore> {
                 id: gen_id(),
                 name,
                 book_id,
-
+                nb_lines: 0,
                 version: 1,
                 has_pending_writes: true,
                 created_at,
                 updated_at: created_at
             }
             let res = await db.put('playlists', value)
+
+            book_edit_with_book(book_id, async book => ({
+                nb_playlists: book.nb_playlists + 1,
+                updated_at: created_at
+            }))
 
             await db.put('pending_mutations', {
                 id: gen_id(),
@@ -214,7 +221,18 @@ export async function make_database(): Promise<DatabaseStore> {
             return res
         },
         async delete_playlist(id: PlaylistId) {
+            let playlist = await db.get('playlists', id)
+
+            if (!playlist) {
+                throw new PlaylistNotFoundError(id)
+            }
+
             let res = await db.delete('playlists', id)
+
+            book_edit_with_book(playlist.book_id, async book => ({
+                nb_playlists: book.nb_playlists - 1,
+                updated_at: Date.now()
+            }))
 
             await db.put('pending_mutations', {
                 id: gen_id(),
@@ -234,6 +252,7 @@ export async function make_database(): Promise<DatabaseStore> {
                 id: playlist.id,
                 book_id: edit.book_id ?? playlist.book_id,
                 name: edit.name ?? playlist.name,
+                nb_lines: edit.nb_lines ?? playlist.nb_lines,
                 version: edit.version,
                 has_pending_writes: true,
                 created_at: playlist.created_at,
@@ -263,6 +282,11 @@ export async function make_database(): Promise<DatabaseStore> {
 
             let res = await db.put('lines', value)
 
+            playlist_edit_with_playlist(playlist_id, async playlist => ({
+                nb_playlists: playlist.nb_lines + 1,
+                updated_at: Date.now()
+            }))
+
             await db.put('pending_mutations', {
                 id: gen_id(),
                 type: 'line.create',
@@ -272,7 +296,17 @@ export async function make_database(): Promise<DatabaseStore> {
             return res
         },
         async delete_line(id: LineId) {
+            let line = await db.get('lines', id)
+            if (!line) {
+                throw new LineNotFoundError(id)
+            }
+
             let res = await db.delete('lines', id)
+
+            playlist_edit_with_playlist(line.playlist_id, async playlist => ({
+                nb_playlists: playlist.nb_lines - 1,
+                updated_at: Date.now()
+            }))
 
             await db.put('pending_mutations', {
                 id: gen_id(),
@@ -374,6 +408,7 @@ export async function make_database(): Promise<DatabaseStore> {
         await db.put('books', {
             id: book.id,
             name: book.name,
+            nb_playlists: 0,
             version: 1,
             created_at: book.created_at,
             updated_at: book.updated_at,
@@ -386,6 +421,7 @@ export async function make_database(): Promise<DatabaseStore> {
             id: value.id,
             book_id: value.book_id,
             name: value.name,
+            nb_lines: 0,
             created_at: value.created_at,
             updated_at: value.updated_at,
             version: 1,
@@ -428,6 +464,7 @@ export async function make_database(): Promise<DatabaseStore> {
         await db.put('books', {
             id: book.id,
             name: edit.name ?? book.name,
+            nb_playlists: edit.nb_playlists ?? book.nb_playlists,
             version: edit.version,
             has_pending_writes: false,
             created_at: book.created_at,
@@ -443,6 +480,7 @@ export async function make_database(): Promise<DatabaseStore> {
             id: playlist.id,
             book_id: edit.book_id ?? playlist.book_id,
             name: edit.name ?? playlist.name,
+            nb_lines: edit.nb_lines ?? playlist.nb_lines,
             version: edit.version,
             has_pending_writes: false,
             created_at: playlist.created_at,
@@ -462,6 +500,44 @@ export async function make_database(): Promise<DatabaseStore> {
             version: edit.version,
             has_pending_writes: false,
             created_at: line.created_at,
+            updated_at: edit.updated_at
+        })
+    }
+
+
+    async function book_edit_with_book(book_id: BookId, fn: (book: Book) => Promise<Partial<BookEdit> & { updated_at: number }>) {
+        let book = await db.get('books', book_id)
+        if (!book) {
+            throw new BookNotFoundError(book_id)
+        }
+
+        let edit = await fn(book)
+        await db.put('books', {
+            id: book.id,
+            name: edit.name ?? book.name,
+            nb_playlists: edit.nb_playlists ?? book.nb_playlists,
+            version: book.version + 1,
+            has_pending_writes: false,
+            created_at: book.created_at,
+            updated_at: edit.updated_at
+        })
+    }
+
+    async function playlist_edit_with_playlist(playlist_id: PlaylistId, fn: (playlist: Playlist) => Promise<Partial<PlaylistEdit> & { updated_at: number }>) {
+        let playlist = await db.get('playlists', playlist_id)
+        if (!playlist) {
+            throw new PlaylistNotFoundError(playlist_id)
+        }
+
+        let edit = await fn(playlist)
+        await db.put('playlists', {
+            id: playlist.id,
+            book_id: playlist.book_id,
+            name: edit.name ?? playlist.name,
+            nb_lines: edit.nb_lines ?? playlist.nb_lines,
+            version: playlist.version + 1,
+            has_pending_writes: false,
+            created_at: playlist.created_at,
             updated_at: edit.updated_at
         })
     }
@@ -502,6 +578,12 @@ function create_tables(db: IDBPDatabase<LinechessDB>) {
         })
         
         move_store.createIndex('by_line_id', 'line_id')
+    }
+
+    if (!db.objectStoreNames.contains('pending_mutations')) {
+        db.createObjectStore('pending_mutations', {
+            keyPath: 'id'
+        })
     }
 
     if (!db.objectStoreNames.contains('sync_state')) {

@@ -7,6 +7,7 @@ import { gen_id, type BookEdit, type LineEdit, type MoveId, type PlaylistEdit } 
 export type LightBookModel = {
     id: BookId
     name: string
+    nb_playlists: number
 }
 
 export type BookModel = {
@@ -23,6 +24,7 @@ export type LightPlaylistModel = {
     id: PlaylistId
     book_id: BookId
     name: string
+    nb_lines: number
 }
 
 export type PlaylistModel = {
@@ -38,6 +40,7 @@ export type LightLineModel = {
     id: LineId
     playlist_id: PlaylistId
     name: string
+    pgn: string
 }
 
 export type LineModel = {

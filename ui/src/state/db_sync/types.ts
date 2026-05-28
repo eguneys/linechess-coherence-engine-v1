@@ -23,7 +23,12 @@ export type AppMutation =
     MutationBookEdit | MutationPlaylistEdit | MutationLineEdit |
     MutationBookDelete | MutationPlaylistDelete | MutationLineDelete
 
+
+export type Sync_State_One_Id = 'sync_state_id_1'
+export const Sync_State_One_Id = 'sync_state_id_1'
+
 export type SyncState = {
+    id: Sync_State_One_Id,
     pending_writes: boolean
     needs_pull: boolean
     last_sync_error?: string
@@ -45,6 +50,7 @@ export type BookEdit = {
     version: number
     name?: string
     selected_playlist?: PlaylistId
+    nb_playlists?: number
     updated_at: number
 }
 
@@ -63,6 +69,7 @@ export type PlaylistEdit = {
     book_id?: BookId
     name?: string
     selected_line?: LineId
+    nb_lines?: number
     updated_at: number
 }
 
@@ -91,6 +98,7 @@ export type BookId = string
 export type Book = {
     id: BookId
     name: string
+    nb_playlists: number
     selected_playlist?: PlaylistId
     created_at: Timestamp
     updated_at: Timestamp
@@ -106,6 +114,7 @@ export type Playlist = {
     id: PlaylistId
     book_id: BookId
     name: string
+    nb_lines: number
     selected_line?: LineId
     created_at: Timestamp
     updated_at: Timestamp

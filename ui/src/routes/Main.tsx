@@ -6,8 +6,7 @@ import { HiOutlineSquare3Stack3d } from "solid-icons/hi";
 import { createSignal, For, onMount, Show } from "solid-js";
 import { useState } from "../state/State";
 import { AiOutlineClose } from "solid-icons/ai";
-
-const list = 'abc,'.repeat(30).split(',')
+import { parse_mainline_from_pgn } from "../state/chess_parser";
 
 export default function Main() {
 
@@ -18,7 +17,7 @@ export default function Main() {
         <div class='panel'>
             <div class='title'><TbOutlineActivityHeartbeat />Unified repertoire workspace</div>
             <div class='info'>
-                Create opening books, add lines to playlists, and measure their coherence metric to optimize your repertoire. Share them with the community, rank up the leaderboards.
+                Create opening books, add lines to playlists, and measure their coherence metric to optimize your repertoire. Share them with the community, and rank up the leaderboards.
             </div>
         </div>
         <div class='books'>
@@ -29,10 +28,10 @@ export default function Main() {
                 </div>
                 <div class='content'>
                     <div class='list'>
-                        <For each={list}>{ () =>
+                        <For each={state.books}>{ book =>
                             <div class='book'>
-                                <div class='title'>Theoretical Masterclass: Grandmaster Repertoire Advanced Masterclass</div>
-                                <span class='nb-playlists'>10 Playlists</span>
+                                <div class='title'>{book.name}</div>
+                                <span class='nb-playlists'>{book.nb_playlists} Playlists</span>
                             </div>
                         }</For>
                     </div>
@@ -46,7 +45,7 @@ export default function Main() {
                 </div>
                 <div class='content'>
                     <div class='list'>
-                        <For each={list}>{ () =>
+                        <For each={state.selected_book?.playlists}>{ () =>
                             <div class='playlist'>
                                 <div class='title'>1. The Ruy Lopez (Spanish Game) </div>
                                 <span class='nb-lines'>10 Lines</span>
@@ -63,11 +62,11 @@ export default function Main() {
                 </div>
                 <div class='content'>
                     <div class='list'>
-                        <For each={list}>{ (_, i) =>
+                        <For each={state.selected_playlist?.lines}>{ (_, i) =>
                             <div class='line'>
                                 <div class='title'><span class='index'>{i() + 1}</span> Berlin Defence: L'Hermet Variation</div>
                                 <span class='pgn'>
-                                    <PgnLine/>
+                                    <PgnLine pgn={_.pgn}/>
                                     <button title="Edit"><TbOutlinePencilMinus/></button>
                                     <button title="Delete" class='delete'><BsTrash/></button>
                                 </span>
@@ -84,13 +83,17 @@ export default function Main() {
         <Show when={state.is_create_new_book_modal_open}>
             <CreateNewBookDialog />
         </Show>
+
+        <Show when={state.is_create_new_line_modal_open}>
+            <AddNewLineDialog />
+        </Show>
         <img alt="" src="/screen1.png"/>
     </main>
     </>)
 }
 
 
-function AddNewLineOpeningDialog() {
+function AddNewLineDialog() {
 
   const [pgn_error, set_pgn_error] = createSignal('')
 
@@ -150,7 +153,7 @@ function AddNewLineOpeningDialog() {
             <div class='input-group'>
               <label>to list</label>
               <select onChange={() => select_playlist($selected_opening_list.value)} ref={$selected_opening_list} value={state.selected_playlist?.id} name="list_name">
-                <For each={state.playlists}>{ item =>
+                <For each={state.selected_book?.playlists}>{ item =>
                   <option value={item.id}>{item.name}</option>
                 }</For>
               </select>
@@ -225,7 +228,7 @@ function CreateNewBookDialog() {
       <div class='create-new-book-dialog-content'>
         <div class='panel'>
           <div class='body'>
-            <div class='title'><div><HiOutlineSquare3Stack3d/> Add New Book </div><AiOutlineClose onClick={close}/></div>
+            <div class='title'><div><BiRegularBookOpen/> Add New Book </div><AiOutlineClose onClick={close}/></div>
 
             <div class='input-group'>
                <label for="opening_name">Book Title *</label>
@@ -307,13 +310,15 @@ function CreateNewPlaylistDialog() {
 
 
 
-function PgnLine() {
+function PgnLine(props: { pgn: string }) {
 
-    return (<>
+  let moves = parse_mainline_from_pgn(props.pgn).map(_ => _.san)
+
+  return (<>
     <div class='moves'>
-        <For each={list}>{ item => 
-            <div class='move'>{item}</div>
-        }</For>
+      <For each={moves}>{item =>
+        <div class='move'>{item}</div>
+      }</For>
     </div>
-    </>)
+  </>)
 }

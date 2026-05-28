@@ -3,6 +3,7 @@ import { makePersisted } from "@solid-primitives/storage"
 import type { BookId, LineId, PlaylistId } from "./types"
 import { make_idb_model, type BookModel, type LightBookModel, type LineModel, type PlaylistModel } from "./db_sync/idb_model"
 import { createAsync } from "@solidjs/router"
+import { createSignal } from "solid-js"
 
 export type DashboardTab = 'dashboard' | 'repertoire'
 
@@ -24,11 +25,11 @@ export type Actions = {
     select_book(id: BookId): void
 
     set_open_create_new_playlist(v: boolean): void
-    create_playlist(book_id: BookId, name: string): Promise<PlaylistId | undefined>
+    create_playlist(name: string): Promise<PlaylistId | undefined>
     select_playlist(id: PlaylistId): void
 
     set_open_create_new_line(v: boolean): void
-    create_line(playlist_id: PlaylistId, name: string, pgn: string): Promise<LineId | undefined>
+    create_line(name: string, pgn: string): Promise<LineId | undefined>
     select_line(id: LineId): void
 }
 
@@ -44,7 +45,15 @@ type LinechessPersistedStore = {
 
 export function make_linechess_store(): LinechessStore {
 
-    const get_db = createAsync(make_idb_model)
+    const get_db = createAsync(async () => {
+        let db = await make_idb_model()
+
+        if (db) {
+            db[1].sync()
+        }
+
+        return db
+    })
 
     let [store, set_store] = makePersisted(createStore<LinechessPersistedStore>({
         is_create_new_playlist_modal_open: false,
@@ -53,7 +62,9 @@ export function make_linechess_store(): LinechessStore {
         selected_book_id: undefined
     }), { name: '.linechess.store.v2'})
 
+    const [fetch_books, set_fetch_books] = createSignal(false, { equals: false })
     const books = createAsync(async () => {
+        fetch_books()
         let db = get_db()?.[0]
         if (!db) {
             return undefined
@@ -63,7 +74,9 @@ export function make_linechess_store(): LinechessStore {
 
 
 
+    const [fetch_selected_book, set_fetch_selected_book] = createSignal(false, { equals: false })
     const selected_book = createAsync(async () => {
+        fetch_selected_book()
         let id = store.selected_book_id
         let db = get_db()?.[0]
         if (!db) {
@@ -75,7 +88,9 @@ export function make_linechess_store(): LinechessStore {
         return db.get_book_by_id(id)
     })
 
+    const [fetch_selected_playlist, set_fetch_selected_playlist] = createSignal(false, { equals: false })
     const selected_playlist = createAsync(async () => {
+        fetch_selected_playlist()
         let db = get_db()?.[0]
         if (!db) {
             return undefined
@@ -89,7 +104,9 @@ export function make_linechess_store(): LinechessStore {
     })
 
 
+    const [fetch_selected_line, set_fetch_selected_line] = createSignal(false, { equals: false })
     const selected_line = createAsync(async () => {
+        fetch_selected_line()
         let db = get_db()?.[0]
         if (!db) {
             return undefined
@@ -145,17 +162,26 @@ export function make_linechess_store(): LinechessStore {
             }
             let res = await db.add_book(name)
 
+            set_fetch_books(true)
             return res
         },
         select_book(id: BookId) {
             set_store('selected_book_id', id)
         },
-        async create_playlist(id: BookId, name: string) {
+        async create_playlist(name: string) {
             let db = get_db()?.[1]
             if (!db) {
                 return undefined
             }
-            let res = await db.add_playlist(id, name)
+
+            let book_id = selected_book()?.id
+            if (!book_id) {
+                return undefined
+            }
+
+            let res = await db.add_playlist(book_id, name)
+
+            set_fetch_selected_book(true)
 
             return res
         },
@@ -175,14 +201,23 @@ export function make_linechess_store(): LinechessStore {
                 selected_playlist,
                 updated_at: Date.now()
             })
+
+            set_fetch_selected_playlist(true)
         },
-        async create_line(playlist_id: PlaylistId, name: string, pgn: string) {
+        async create_line(name: string, pgn: string) {
 
             let db = get_db()?.[1]
             if (!db) {
                 return undefined
             }
+            let playlist_id = selected_playlist()?.id
+            if (!playlist_id) {
+                return undefined
+            }
+
             let res = await db.add_line(playlist_id, name, pgn)
+
+            set_fetch_selected_line(true)
 
             return res
         },

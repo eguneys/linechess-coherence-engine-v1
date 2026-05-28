@@ -4,7 +4,7 @@ import type { DatabaseActions, DatabaseState } from "./idb"
 class SyncManager {
   private syncing = false
   private timer: ReturnType<typeof setTimeout> | null = null 
-  private readonly SYNC_INTERVAL = 5000
+  private readonly SYNC_INTERVAL = 60 * 5000
 
   constructor(
     readonly pushMutations: () => Promise<void>, 
