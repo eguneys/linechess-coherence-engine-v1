@@ -1,0 +1,95 @@
+@use '../variables';
+
+main.evaluator {
+    display: grid;
+
+    grid-template-areas: 'search';
+
+    .search-bar {
+        grid-area: search;
+    }
+}
+
+main.evaluator {
+
+
+    .search-bar {
+
+        margin-top: variables.$s2;
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+        @include variables.rounded-shadow;
+
+        .title {
+            display: flex;
+            align-items: center;
+
+            font-size: variables.$l03;
+            @include variables.google-sans-flex(600);
+            text-transform: uppercase;
+            @include variables.loose;
+            gap: variables.$m1;
+            svg {
+                color: variables.$green-2;
+            }
+        }
+
+        p {
+            
+            @include variables.google-sans-flex(400);
+            color: variables.$grey0;
+            padding-inline: variables.$l0;
+            text-align: center;
+        }
+
+        .search {
+            margin: variables.$m2;
+            display: flex;
+            gap: variables.$m1;
+
+            .icon-search {
+                display: flex;
+                align-items: center;
+                border: variables.$px solid variables.$grey0;
+                border-radius: variables.$px;
+                padding-left: variables.$m1;
+
+                input {
+                    padding: variables.$m1;
+                    width: 20em;
+                    background: variables.$white0;
+                    color: variables.$black3;
+                    
+                    &:focus {
+                        outline: none;
+                    }
+
+                }
+
+                &, input::placeholder {
+                   color: variables.$grey-1;
+                   @include variables.loose;
+                }
+           }
+
+           button {
+            padding-inline: variables.$l0;
+            text-transform: uppercase;
+            color: variables.$white0;
+            background: variables.$navy2;
+            @include variables.google-sans-flex(600);
+            @include variables.loose;
+            border: none;
+            border-radius: variables.$px;
+
+            &:hover {
+               background: variables.$navy15;
+               color: variables.$white1;
+            }
+           }
+
+        }
+    }
+
+}
