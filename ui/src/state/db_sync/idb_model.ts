@@ -1,3 +1,4 @@
+import type { Accessor } from "solid-js"
 import { parse_mainline_from_pgn } from "../chess_parser"
 import type { BookId, LineId, PlaylistId } from "../types"
 import { make_database } from "./idb"
@@ -91,11 +92,11 @@ export type Idb_Model_Actions = {
 
 export type Idb_Store = [Idb_Model_State, Idb_Model_Actions]
 
-export async function make_idb_model(): Promise<Idb_Store> {
+export async function make_idb_model(should_sync: Accessor<boolean>): Promise<Idb_Store> {
 
     let [db_state, db_actions] = await make_database()
 
-    let syncer = await make_syncer(db_state, db_actions)
+    let syncer = await make_syncer(db_state, db_actions, should_sync)
 
     let state: Idb_Model_State = {
         async get_books() {
@@ -114,6 +115,7 @@ export async function make_idb_model(): Promise<Idb_Store> {
             let res: BookModel = {
                 id: book.id,
                 name: book.name,
+                selected_playlist: book.selected_playlist,
                 version: book.version,
                 playlists: playlists.map(_ => _)
             }
@@ -132,6 +134,7 @@ export async function make_idb_model(): Promise<Idb_Store> {
             let res: PlaylistModel = {
                 id: list.id,
                 book_id: list.book_id,
+                selected_line: list.selected_line,
                 version: list.version,
                 name: list.name,
                 lines: lines.map(_ => _)
@@ -253,4 +256,4 @@ export async function make_idb_model(): Promise<Idb_Store> {
     return [state, actions]
 }
 
-class InvalidPGNException extends Error {}
+export class InvalidPGNException extends Error {}

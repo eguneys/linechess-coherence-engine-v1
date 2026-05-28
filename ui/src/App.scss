@@ -373,6 +373,7 @@ button.secondary {
     border: variables.$px solid variables.$navy-3;
     background: variables.$navy-3-a;
     color: variables.$navy-6;
+    @include variables.google-sans-flex(500);
 
     @include variables.no-select;
 
@@ -426,4 +427,31 @@ main {
             border: variables.$px dashed variables.$red1;
         }
     }
+}
+
+
+
+main {
+    select {
+        @include variables.google-sans-flex(500);
+            /* 1. Remove default browser styling (the arrow) */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+    
+            /* 2. Basic box styling */
+            width: 100%;
+            padding: variables.$s0;
+            @include variables.rounded;
+            background-color: variables.$navy1;
+            color: variables.$white0;
+            cursor: pointer;
+        }
+    
+        /* Add a focus state for accessibility */
+        select:focus {
+            outline: none;
+            border-color: variables.$navy0;
+            box-shadow: 0 0 0 3px variables.$navy0;
+        }
 }

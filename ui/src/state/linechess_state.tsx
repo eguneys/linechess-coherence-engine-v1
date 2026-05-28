@@ -3,7 +3,14 @@ import { makePersisted } from "@solid-primitives/storage"
 import type { BookId, LineId, PlaylistId } from "./types"
 import { make_idb_model, type BookModel, type LightBookModel, type LineModel, type PlaylistModel } from "./db_sync/idb_model"
 import { createAsync } from "@solidjs/router"
-import { createSignal } from "solid-js"
+import { createEffect, createMemo, createSignal } from "solid-js"
+import type { DashboardState } from "./dashboard_state"
+
+export class NoPlaylistSelected extends Error {
+    constructor() {
+        super('No playlist selected')
+    }
+}
 
 export type DashboardTab = 'dashboard' | 'repertoire'
 
@@ -43,10 +50,12 @@ type LinechessPersistedStore = {
     selected_book_id: BookId | undefined
 }
 
-export function make_linechess_store(): LinechessStore {
+export function make_linechess_store(dash_state: DashboardState): LinechessStore {
+
+    const should_sync = createMemo(() => dash_state.logged_in_profile !== undefined)
 
     const get_db = createAsync(async () => {
-        let db = await make_idb_model()
+        let db = await make_idb_model(should_sync)
 
         if (db) {
             db[1].sync()
@@ -119,6 +128,10 @@ export function make_linechess_store(): LinechessStore {
         return db.get_line_by_id(selected_line)
     })
 
+    createEffect(() => {
+        console.log(selected_playlist())
+    })
+
     let state = {
         get books() {
             return books() ?? []
@@ -185,7 +198,7 @@ export function make_linechess_store(): LinechessStore {
 
             return res
         },
-        async select_playlist(selected_playlist: PlaylistId) {
+        async select_playlist(playlist_id: PlaylistId) {
             let db = get_db()?.[1]
             if (!db) {
                 return
@@ -198,11 +211,11 @@ export function make_linechess_store(): LinechessStore {
             await db.edit_book({
                 id: book.id,
                 version: book.version,
-                selected_playlist,
+                selected_playlist: playlist_id,
                 updated_at: Date.now()
             })
 
-            set_fetch_selected_playlist(true)
+            set_fetch_selected_book(true)
         },
         async create_line(name: string, pgn: string) {
 
@@ -212,7 +225,7 @@ export function make_linechess_store(): LinechessStore {
             }
             let playlist_id = selected_playlist()?.id
             if (!playlist_id) {
-                return undefined
+                throw new NoPlaylistSelected()
             }
 
             let res = await db.add_line(playlist_id, name, pgn)
@@ -240,6 +253,7 @@ export function make_linechess_store(): LinechessStore {
                 updated_at: Date.now()
             })
 
+            set_fetch_selected_playlist(true)
         },
     }
 

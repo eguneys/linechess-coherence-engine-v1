@@ -2,6 +2,8 @@
 
 main.composition {
 
+    --lists-height: 14em;
+
     display: grid;
 
     grid-template-areas: 'panel'
@@ -12,10 +14,18 @@ main.composition {
 
     @include variables.respond-to("lg") {
         grid-template-areas: 'panel panel'
-                             'books lines'
-                             'playlist lines';
+                             'playlist lines'
+                             'books lines';
         grid-template-columns: 2fr 3fr;
     }
+
+    @include variables.respond-to("xl") {
+        grid-template-areas: 'panel panel panel'
+                             'books playlist lines';
+        grid-template-columns: 2fr 2fr 3fr;
+    }
+
+
     
     .panel {
         grid-area: panel;
@@ -89,7 +99,7 @@ main.composition {
 
             .list {
                 overflow-y: auto;
-                height: 18em;
+                height: var(--lists-height);
             }
     }
 
@@ -172,7 +182,7 @@ main.composition {
     .lines {
         .list {
             overflow-y: auto;
-            height: 40em;
+            height: calc(var(--lists-height) * 2);
             .line {
                 display: flex;
                 flex-flow: column;
@@ -476,3 +486,126 @@ main.composition {
     }
 
 }
+
+
+
+main.composition {
+ 
+    .add-new-line-dialog-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100%;
+
+        .panel {
+            position: relative;
+            display: flex;
+            flex-flow: column;
+
+            overflow: hidden;
+
+            width: 100%;
+            max-width: variables.$xl4;
+            border: variables.$px solid variables.$white0;
+            background: variables.$navy2;
+            border-radius: variables.$m2;
+
+            position: relative;
+            .body {
+                display: flex;
+                flex-flow: column;
+
+                gap: variables.$s3;
+
+                margin-bottom: variables.$s1;
+                .title {
+                    @include variables.google-sans-flex(700);
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: variables.$s3;
+                    color: variables.$white0;
+
+                    & div {
+                        display: flex;
+                        align-items: center;
+                        gap: variables.$s2;
+                        svg {
+                            color: variables.$green-3;
+                            font-size: variables.$m4;
+                        }
+
+
+                    }
+
+                    svg {
+                        color: variables.$white1;
+                        @include variables.no-select;
+
+                        &:hover {
+                            color: variables.$white0;
+                        }
+                    }
+
+
+
+                    border-bottom: variables.$px solid variables.$navy1;
+                }
+
+                .input-group {
+                    display: flex;
+                    flex-flow: column;
+                    gap: variables.$s1;
+                    margin: variables.$s2;
+
+                    label {
+                        @include variables.google-sans-flex(500);
+                        color: variables.$grey-1;
+                        font-size: variables.$m15;
+                        text-transform: uppercase;
+                        line-height: variables.$m2;
+                    }
+                    input.pgn {
+                        color: variables.$navy-6;
+
+                        &::placeholder {
+                           color: variables.$navy-4;
+                        }
+
+                    }
+
+                }
+
+                .error {
+                    @include variables.google-sans-flex(600);
+                    margin-left: variables.$m1;
+                    color: variables.$red1;
+                    font-size: variables.$s3;
+                }
+
+            }
+
+            .action {
+                display: flex;
+                gap: variables.$m1;
+                justify-content: flex-end;
+                border-top: variables.$px solid variables.$navy1;
+                padding: variables.$s3;
+
+
+                button {
+                    @include variables.google-sans-flex(500);
+
+                    border-radius: variables.$s1;
+                    margin-inline: variables.$m1;
+
+                    &.primary {
+                        color: variables.$white0;
+                        background: variables.$green-2;
+                    }
+                }
+            }
+        }
+    }
+}
+

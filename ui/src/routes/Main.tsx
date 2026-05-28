@@ -7,10 +7,13 @@ import { createSignal, For, onMount, Show } from "solid-js";
 import { useState } from "../state/State";
 import { AiOutlineClose } from "solid-icons/ai";
 import { parse_mainline_from_pgn } from "../state/chess_parser";
+import { MdOutlineCommit } from "solid-icons/md";
+import { InvalidPGNException } from "../state/db_sync/idb_model";
+import { NoPlaylistSelected } from "../state/linechess_state";
 
 export default function Main() {
 
-  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_playlist, set_open_create_new_book }}] = useState()
+  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, set_open_create_new_playlist, set_open_create_new_book }}] = useState()
 
     return (<>
     <main class='composition'>
@@ -58,7 +61,7 @@ export default function Main() {
                 <div class='header'>
                     <div class='title'>1. The Ruy Lopez (Spanish Game)</div>
                     <button class='coherence'><BiRegularBrain/>Measure Coherence</button>
-                    <button class='primary'><BsPlus/>Add Line</button>
+                    <button onClick={() => set_open_create_new_line(true)} class='primary'><BsPlus/>Add Line</button>
                 </div>
                 <div class='content'>
                     <div class='list'>
@@ -97,7 +100,7 @@ function AddNewLineDialog() {
 
   const [pgn_error, set_pgn_error] = createSignal('')
 
-  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, select_line, create_line, select_playlist }}] = useState()
+  const [{ linechess_state: state }, { linechess_actions: { set_open_create_new_line, select_line, create_line, select_playlist, select_book }}] = useState()
 
   const close = () => set_open_create_new_line(false)
 
@@ -124,7 +127,13 @@ function AddNewLineDialog() {
       }
       close()
     } catch (e) {
-      set_pgn_error('Invalid PGN')
+      if (e instanceof InvalidPGNException) {
+        set_pgn_error('Invalid PGN')
+      } else if (e instanceof NoPlaylistSelected) {
+        set_pgn_error(e.message)
+      } else {
+        set_pgn_error('Failed creating line.')
+      }
     }
   }
 
@@ -137,7 +146,8 @@ function AddNewLineDialog() {
   let $opening_line_name_text!: HTMLInputElement
   let $opening_line_pgn_text!: HTMLInputElement
 
-  let $selected_opening_list!: HTMLSelectElement
+  let $selected_book!: HTMLSelectElement
+  let $selected_playlist!: HTMLSelectElement
 
   onMount(() => {
     $opening_line_name_text.focus()
@@ -146,13 +156,22 @@ function AddNewLineDialog() {
   return (<>
     <dialog open={state.is_create_new_line_modal_open}>
       <div onClick={close} class='dialog-backdrop'></div>
-      <div class='create-new-opening-dialog-content'>
+      <div class='add-new-line-dialog-content'>
         <div class='panel'>
           <div class='body'>
-            <div class='title'>Add New Opening Line</div>
+            <div class='title'><div><MdOutlineCommit/> Add New Line </div><AiOutlineClose onClick={close}/></div>
             <div class='input-group'>
-              <label>to list</label>
-              <select onChange={() => select_playlist($selected_opening_list.value)} ref={$selected_opening_list} value={state.selected_playlist?.id} name="list_name">
+              <label>select book</label>
+              <select required={true} onChange={() => select_book($selected_book.value)} ref={$selected_book} value={state.selected_book?.id} name="book_name">
+                <For each={state.books}>{ item =>
+                  <option value={item.id}>{item.name}</option>
+                }</For>
+              </select>
+            </div>
+
+            <div class='input-group'>
+              <label>select playlist</label>
+              <select required={true} onChange={() => select_playlist($selected_playlist.value)} ref={$selected_playlist} value={state.selected_playlist?.id} name="playlist_name">
                 <For each={state.selected_book?.playlists}>{ item =>
                   <option value={item.id}>{item.name}</option>
                 }</For>
@@ -160,22 +179,24 @@ function AddNewLineDialog() {
             </div>
 
             <div class='input-group'>
-               <label for="opening_line_name">Opening Line Name</label>
+               <label for="opening_line_name">Line Name</label>
                <input minLength={3} required={true} ref={$opening_line_name_text} id="opening_line_name" type='text' placeholder="e.g. 3.e5 c5 Advanced Variation"></input>
             </div>
 
             <div class='input-group'>
-               <label for="opening_line_pgn">Opening Line PGN</label>
-               <input spellcheck="false" autocorrect="off" aria-invalid={!!pgn_error()} minLength={8} required={true} ref={$opening_line_pgn_text} id="opening_line_pgn" type='text' placeholder="e.g.1.e4 e5 2. c4 c5 ..." value={state.add_new_line_pgn}></input>
-               <Show when={pgn_error()}>{error =>
-                <div class='error'>{error()}</div>
-              }</Show>
+               <label for="opening_line_pgn">Line PGN</label>
+               <input class='pgn' spellcheck="false" autocorrect="off" aria-invalid={!!pgn_error()} minLength={8} required={true} ref={$opening_line_pgn_text} id="opening_line_pgn" type='text' placeholder="e.g. 1.e4 e5 2. c4 c5 ..." value={state.add_new_line_pgn??''}></input>
+
               <button onClick={paste_pgn} class='secondary'>Paste PGN</button>
             </div>
+            <Show when={pgn_error()}>{error =>
+              <div class='error'>{error()}</div>
+            }</Show>
           </div>
+
           <div class='action'>
-            <button type="submit" onClick={add_new_opening_line} class='primary'>Add New Line</button>
             <button onClick={close} class='secondary'>Cancel</button>
+            <button type="submit" onClick={add_new_opening_line} class='primary'>Add New Line</button>
           </div>
         </div>
       </div>

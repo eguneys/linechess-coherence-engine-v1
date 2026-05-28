@@ -8,13 +8,17 @@ class SyncManager {
 
   constructor(
     readonly pushMutations: () => Promise<void>, 
-    readonly pullChanges: () => Promise<void>) {}
+    readonly pullChanges: () => Promise<void>,
+    readonly should_sync: () => boolean) { }
 
   get is_syncing() {
     return this.syncing
   }
 
   async run() {
+
+    if (!this.should_sync()) return
+
     // 1. Guard against concurrent runs
     if (this.syncing) return
     this.syncing = true
@@ -64,9 +68,9 @@ class SyncManager {
   }
 }
 
-export async function make_syncer(db_state: DatabaseState, db_actions: DatabaseActions) {
+export async function make_syncer(db_state: DatabaseState, db_actions: DatabaseActions, should_sync: () => boolean) {
 
-  let syncer = new SyncManager(pushMutations, pullChanges)
+  let syncer = new SyncManager(pushMutations, pullChanges, should_sync)
   let sync_api = create_sync_api()
 
   let sync_state = await db_state.get_sync_state()

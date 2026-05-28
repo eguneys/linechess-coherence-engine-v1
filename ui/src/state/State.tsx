@@ -23,7 +23,7 @@ export type LinechessStore = [LinechessState, LinechessActions]
 export const LinechessProvider = (props: { children: JSX.Element }) => {
 
     const [dashboard_state, dashboard_actions] = make_dashboard()
-    const [linechess_state, linechess_actions] = make_linechess_store()
+    const [linechess_state, linechess_actions] = make_linechess_store(dashboard_state)
 
     const state = {
         linechess_state,

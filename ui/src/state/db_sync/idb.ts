@@ -81,7 +81,7 @@ export type DatabaseActions = {
 
 export type DatabaseStore = [DatabaseState, DatabaseActions]
 
-const DB_VERSION = 1
+const DB_VERSION = 4
 
 export async function make_database(): Promise<DatabaseStore> {
 
@@ -178,6 +178,7 @@ export async function make_database(): Promise<DatabaseStore> {
                 id: book.id,
                 name: edit.name ?? book.name,
                 nb_playlists: edit.nb_playlists ?? book.nb_playlists,
+                selected_playlist: edit.selected_playlist ?? book.selected_playlist,
                 version: edit.version,
                 has_pending_writes: true,
                 created_at: book.created_at,
@@ -465,6 +466,7 @@ export async function make_database(): Promise<DatabaseStore> {
             id: book.id,
             name: edit.name ?? book.name,
             nb_playlists: edit.nb_playlists ?? book.nb_playlists,
+            selected_playlist: edit.selected_playlist ?? book.selected_playlist,
             version: edit.version,
             has_pending_writes: false,
             created_at: book.created_at,
@@ -480,6 +482,7 @@ export async function make_database(): Promise<DatabaseStore> {
             id: playlist.id,
             book_id: edit.book_id ?? playlist.book_id,
             name: edit.name ?? playlist.name,
+            selected_line: edit.selected_line ?? playlist.selected_line,
             nb_lines: edit.nb_lines ?? playlist.nb_lines,
             version: edit.version,
             has_pending_writes: false,
@@ -516,6 +519,7 @@ export async function make_database(): Promise<DatabaseStore> {
             id: book.id,
             name: edit.name ?? book.name,
             nb_playlists: edit.nb_playlists ?? book.nb_playlists,
+            selected_playlist: edit.selected_playlist ?? book.selected_playlist,
             version: book.version + 1,
             has_pending_writes: false,
             created_at: book.created_at,
@@ -535,6 +539,7 @@ export async function make_database(): Promise<DatabaseStore> {
             book_id: playlist.book_id,
             name: edit.name ?? playlist.name,
             nb_lines: edit.nb_lines ?? playlist.nb_lines,
+            selected_line: edit.selected_line ?? playlist.selected_line,
             version: playlist.version + 1,
             has_pending_writes: false,
             created_at: playlist.created_at,
