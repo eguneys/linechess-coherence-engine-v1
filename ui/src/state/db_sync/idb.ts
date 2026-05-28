@@ -285,7 +285,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let res = await db.put('lines', value)
 
             playlist_edit_with_playlist(playlist_id, async playlist => ({
-                nb_playlists: playlist.nb_lines + 1,
+                nb_lines: playlist.nb_lines + 1,
                 updated_at: Date.now()
             }))
 
@@ -306,7 +306,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let res = await db.delete('lines', id)
 
             playlist_edit_with_playlist(line.playlist_id, async playlist => ({
-                nb_playlists: playlist.nb_lines - 1,
+                nb_lines: playlist.nb_lines - 1,
                 updated_at: Date.now()
             }))
 
@@ -539,8 +539,8 @@ export async function make_database(): Promise<DatabaseStore> {
             id: playlist.id,
             book_id: playlist.book_id,
             name: edit.name ?? playlist.name,
-            nb_lines: edit.nb_lines ?? playlist.nb_lines,
             selected_line: edit.selected_line ?? playlist.selected_line,
+            nb_lines: edit.nb_lines ?? playlist.nb_lines,
             version: playlist.version + 1,
             has_pending_writes: false,
             created_at: playlist.created_at,
