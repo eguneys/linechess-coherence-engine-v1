@@ -1,53 +1,83 @@
-import type { Color } from "chessops"
-import { parse_mainline_from_pgn } from "./chess_parser"
-import { make_database, type DatabaseActions } from "./idb"
-import { gen_id, type LichessSearchHandle, type OpeningDiverge, type OpeningLineId, type OpeningList, type OpeningListId, type SingleLineMove } from "./types"
-import { Default_O_params, FitnessFromRecentMatches } from "./fitness2"
+import { parse_mainline_from_pgn } from "../chess_parser"
+import type { BookId, LineId, PlaylistId } from "../types"
+import { make_database } from "./idb"
+import { make_syncer } from "./sync"
+import { gen_id, type BookEdit, type LineEdit, type MoveId, type PlaylistEdit } from "./types"
 
-export type LightOpeningListModel = OpeningList
-
-export type OpeningListModel = {
-    id: OpeningListId
+export type LightBookModel = {
+    id: BookId
     name: string
-    lines: LightOpeningLineModel[]
 }
 
-export type LightOpeningLineModel = {
-    id: string
+export type BookModel = {
+    id: BookId
     name: string
-    pgn: string
-}
-
-export type SingleLineMoveModel = SingleLineMove
-
-export type OpeningLineModel = {
-    id: string
-    name: string
-    pgn: string
-    moves: SingleLineMoveModel[]
+    playlists: LightPlaylistModel[]
 }
 
 
-export type OpeningLineModelWithList = {
-    id: string
+
+export type LightPlaylistModel = {
+    id: PlaylistId
+    book_id: BookId
+    name: string
+}
+
+export type PlaylistModel = {
+    id: PlaylistId
+    book_id: BookId
+    name: string
+    lines: LightLineModel[]
+}
+
+export type LightLineModel = {
+    id: LineId
+    playlist_id: PlaylistId
+    name: string
+}
+
+export type LineModel = {
+    id: LineId
+    playlist_id: PlaylistId
     name: string
     pgn: string
-    moves: SingleLineMoveModel[]
-    list: LightOpeningListModel
+    moves: MoveModel[]
+}
+
+export type LineModelWithPlaylist = {
+    id: LineId
+    playlist_id: PlaylistId
+    name: string
+    pgn: string
+    moves: MoveModel[]
+    list: LightPlaylistModel
+}
+
+export type MoveModel = {
+    id: MoveId
+    line_id: LineId
+    ply: number
+    san: string
 }
 
 export type Idb_Model_State = {
-    get_opening_lists(): Promise<LightOpeningListModel[]>
-    get_opening_list_by_id(id: OpeningListId): Promise<OpeningListModel | undefined>
-    get_opening_line_by_id(id: OpeningLineId): Promise<OpeningLineModel | undefined>
-    get_opening_diverge_for_moves(your_color: Color, sans: string[]): Promise<OpeningDiverge | undefined>
-    get_recent_search_handle_by_username_since(username: string, since: number): Promise<LichessSearchHandle | undefined>
+    get_books(): Promise<LightBookModel[]>
+    get_book_by_id(id: BookId): Promise<BookModel | undefined>
+    get_playlist_by_id(id: PlaylistId): Promise<PlaylistModel | undefined>
+    get_line_by_id(id: LineId): Promise<LineModel | undefined>
 }
 
 export type Idb_Model_Actions = {
-    db_actions: DatabaseActions
-    create_opening_line(id: OpeningListId, name: string, pgn: string): Promise<OpeningLineId>
-    set_recent_search_handle(search_handle: LichessSearchHandle): Promise<void>
+    sync(): void
+    add_book(name: string): Promise<BookId>
+    delete_book(id: BookId): Promise<void>
+    edit_book(edit: BookEdit): Promise<void>
+    add_playlist(id: BookId, name: string): Promise<PlaylistId>
+    delete_playlist(id: PlaylistId): Promise<void>
+    edit_playlist(edit: PlaylistEdit): Promise<void>
+    add_line(id: PlaylistId, name: string, pgn: string): Promise<LineId>
+    delete_line(id: LineId): Promise<void>
+    edit_line(edit: LineEdit): Promise<void>
 }
 
 export type Idb_Store = [Idb_Model_State, Idb_Model_Actions]
@@ -56,134 +86,108 @@ export async function make_idb_model(): Promise<Idb_Store> {
 
     let [db_state, db_actions] = await make_database()
 
+    let syncer = await make_syncer(db_state, db_actions)
+
     let state: Idb_Model_State = {
-        async get_opening_lists() {
-            return (await db_state.get_opening_lists())
-                .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+        async get_books() {
+            return (await db_state.get_books())
+                .sort((a, b) => b.created_at - a.created_at)
         },
-        async get_opening_list_by_id(id: OpeningListId) {
-            let list = await db_state.get_opening_list_by_id(id)
+        async get_book_by_id(id: BookId) {
+            let book = await db_state.get_book_by_id(id)
+
+            if (!book) {
+                return undefined
+            }
+            let playlists = (await db_state.get_playlists_by_book_id(id))
+                .sort((a, b) => b.created_at - a.created_at)
+
+            let res: BookModel = {
+                id: book.id,
+                name: book.name,
+                playlists: playlists.map(_ => _)
+            }
+
+            return res
+        },
+        async get_playlist_by_id(id: PlaylistId) {
+            let list = await db_state.get_playlist_by_id(id)
 
             if (!list) {
                 return undefined
             }
-            let lines = await db_state.get_opening_lines_by_list_id(id)
-            lines = lines.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+            let lines = (await db_state.get_lines_by_playlist_id(id))
+                .sort((a, b) => b.created_at - a.created_at)
 
-            let res: OpeningListModel = {
+            let res: PlaylistModel = {
                 id: list.id,
+                book_id: list.book_id,
                 name: list.name,
                 lines: lines.map(_ => _)
             }
 
             return res
         },
-        async get_opening_line_by_id(id: OpeningLineId) {
-            let line = await db_state.get_opening_line_by_id(id)
+        async get_line_by_id(id: LineId) {
+            let line = await db_state.get_line_by_id(id)
 
             if (!line) {
                 return undefined
             }
 
-            let moves = await db_state.get_line_moves_by_line_id(id)
-
-            moves = moves.sort((a, b) => a.ply - b.ply)
+            let moves = (await db_state.get_moves_by_line_id(id))
+                .sort((a, b) => a.ply - b.ply)
 
             return {
                 id: line.id,
+                playlist_id: line.playlist_id,
                 name: line.name,
                 pgn: line.pgn,
                 moves
             }
         },
-        async get_opening_diverge_for_moves(your_color: Color, sans: string[]) {
-
-            let diverge_at_ply = -1
-            let most_matched_opening
-
-
-            let opening_lists = await db_state.get_opening_lists()
-
-            for (let list of opening_lists) {
-                let lines = await db_state.get_opening_lines_by_list_id(list.id)
-
-                for (let line of lines) {
-                    let line_moves = await db_state.get_line_moves_by_line_id(line.id)
-
-                    line_moves.sort((a, b) => a.ply - b.ply)
-
-                    let diverge_at_ply_i = -1
-                    for (let i = 0; i < line_moves.length; i++) {
-                        if (line_moves[i].san === sans[i]) {
-                            diverge_at_ply_i = i
-                            continue
-                        }
-                        break
-                    }
-
-                    if (diverge_at_ply_i > diverge_at_ply) {
-                        diverge_at_ply = diverge_at_ply_i
-                        most_matched_opening = {
-                            id: line.id,
-                            name: line.name,
-                            pgn: line.pgn,
-                            moves: line_moves,
-                            list
-                        }
-                    }
-
-                }
-
-            }
-
-
-            if (!most_matched_opening) {
-                return undefined
-            }
-
-            let after_ply = diverge_at_ply
-            let after_nb_moves = diverge_at_ply
-            let after_move = sans[after_ply]
-            let diverge_move = sans[after_ply + 1]
-            let diverge_ply = after_ply + 1
-            let did_you_diverge = (your_color === 'white') === (diverge_at_ply % 2 === 1)
-
-            let res: OpeningDiverge = {
-                most_matched_opening,
-                diverge_at_ply,
-                after_nb_moves,
-                after_ply,
-                after_move,
-                diverge_move,
-                diverge_ply,
-                did_you_diverge
-            }
-            return res
-        },
-        async get_recent_search_handle_by_username_since(username: string, since: number): Promise<LichessSearchHandle | undefined> {
-            let res: LichessSearchHandle = {
-                username,
-                handle: username.toLowerCase(),
-                fitness_score_with_recent_matches: FitnessFromRecentMatches([], Default_O_params),
-                is_fetching_recent_games: true,
-                last_checked: 0
-            }
-            since;
-
-            return res
-        }
     }
 
     let actions = {
-        db_actions,
-        async create_opening_line(list_id: OpeningListId, name: string, pgn: string) {
+        sync() {
+            syncer.kick()
+        },
+        async add_book(name: string) {
+            let res = await db_actions.create_book(name)
+
+            syncer.kick()
+            return res
+        },
+        async delete_book(id: BookId) {
+            await db_actions.delete_book(id)
+            syncer.kick()
+        },
+        async edit_book(edit: BookEdit) {
+            await db_actions.edit_book(edit)
+            syncer.kick()
+        },
+        async add_playlist(book_id: BookId, name: string) {
+            let res = await db_actions.create_playlist(book_id, name)
+
+            syncer.kick()
+            return res
+        },
+        async delete_playlist(id: PlaylistId) {
+            await db_actions.delete_playlist(id)
+            syncer.kick()
+        },
+        async edit_playlist(edit: PlaylistEdit) {
+            await db_actions.edit_playlist(edit)
+            syncer.kick()
+        },
+        async add_line(playlist_id: PlaylistId, name: string, pgn: string) {
 
             let sans = parse_mainline_from_pgn(pgn)
 
             if (sans.length < 2) {
                 throw new InvalidPGNException()
             }
-            let line_id = await db_actions.create_opening_line(list_id, name, pgn)
+            let line_id = await db_actions.create_line(playlist_id, name, pgn)
 
             let moves = sans.map(({uci, san}, index) => {
                 return {
@@ -194,12 +198,44 @@ export async function make_idb_model(): Promise<Idb_Store> {
                     san
                 }
             })
-            await db_actions.create_line_moves(moves)
+            await db_actions.create_moves(moves)
+
+            syncer.kick()
+
             return line_id
         },
-        async set_recent_search_handle(search_handle: LichessSearchHandle) {
-            console.log(search_handle)
-        }
+        async delete_line(id: LineId) {
+            await db_actions.delete_line(id)
+            await db_actions.delete_moves(id)
+
+            syncer.kick()
+        },
+        async edit_line(edit: LineEdit) {
+            await db_actions.edit_line(edit)
+
+            if (edit.pgn) {
+                await db_actions.delete_moves(edit.id)
+
+                let sans = parse_mainline_from_pgn(edit.pgn)
+
+                if (sans.length < 2) {
+                    throw new InvalidPGNException()
+                }
+
+                let moves = sans.map(({ uci, san }, index) => {
+                    return {
+                        id: gen_id(),
+                        line_id: edit.id,
+                        ply: index + 1,
+                        uci,
+                        san
+                    }
+                })
+                await db_actions.create_moves(moves)
+            }
+
+            syncer.kick()
+        },
     }
     
     return [state, actions]

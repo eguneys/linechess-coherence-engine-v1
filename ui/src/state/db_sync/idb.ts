@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
-import { gen_id, type Book, type BookId, type Line, type LineId, type Playlist, type PlaylistId, type Move, type MoveId, type BookEdit, type PlaylistEdit, type LineEdit, type PendingMutationId, type AppMutation } from './types'
+import { gen_id, type Book, type BookId, type Line, type LineId, type Playlist, type PlaylistId, type Move, type MoveId, type BookEdit, type PlaylistEdit, type LineEdit, type PendingMutationId, type AppMutation, type LineAdd, type PlaylistAdd, type BookAdd, type SyncState } from './types'
 
 class BookNotFoundError extends Error {
     constructor(id: BookId) {
@@ -21,6 +21,10 @@ class LineNotFoundError extends Error {
 
 
 interface LinechessDB extends DBSchema {
+    sync_state: {
+        key: 'sync_state_id_1'
+        value: SyncState
+    },
     books: {
         key: BookId
         value: Book
@@ -47,6 +51,7 @@ interface LinechessDB extends DBSchema {
 }
 
 export type DatabaseState = {
+    get_sync_state(): Promise<SyncState>
     get_books(): Promise<Book[]>
     get_book_by_id(id: BookId): Promise<Book | undefined>
     get_playlists_by_book_id(book: BookId): Promise<Playlist[]>
@@ -69,16 +74,18 @@ export type DatabaseActions = {
     delete_line(id: LineId): Promise<void>
     create_moves(moves: Move[]): Promise<void>
     delete_moves(id: LineId): Promise<void>
-    delete_pending_mutation(id: PendingMutationId): Promise<void>
+    delete_mutations(id: PendingMutationId[]): Promise<void>
+    apply_mutations(mutations: AppMutation[]): Promise<void>
+    set_sync_state(sync_state: SyncState): Promise<void>
 }
 
 export type DatabaseStore = [DatabaseState, DatabaseActions]
 
-const VERSION = 1
+const DB_VERSION = 1
 
 export async function make_database(): Promise<DatabaseStore> {
 
-    const db = await openDB<LinechessDB>('linechess-db', VERSION, {
+    const db = await openDB<LinechessDB>('linechess-db', DB_VERSION, {
         upgrade(db) {
             create_tables(db)
         }
@@ -109,7 +116,23 @@ export async function make_database(): Promise<DatabaseStore> {
         },
         get_pending_mutations() {
             return db.getAll('pending_mutations')
+        },
+        async get_sync_state() {
+            let res = await db.get('sync_state', 'sync_state_id_1')
+
+            if (!res) {
+                let value: SyncState = {
+                    pending_writes: false,
+                    needs_pull: false,
+                    sync_in_progress: false,
+                    last_pulled_at: 0
+                }
+                await db.add('sync_state', value)
+                return value
+            }
+            return res
         }
+
     }
 
     let actions = {
@@ -120,7 +143,7 @@ export async function make_database(): Promise<DatabaseStore> {
                 name,
 
                 version: 1,
-                has_pending_writes: false,
+                has_pending_writes: true,
                 created_at,
                 updated_at: created_at
             }
@@ -128,6 +151,7 @@ export async function make_database(): Promise<DatabaseStore> {
 
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'book.create',
                 payload: value
             })
@@ -138,6 +162,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let res =  await db.delete('books', id)
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'book.delete',
                 payload: id
             })
@@ -152,13 +177,14 @@ export async function make_database(): Promise<DatabaseStore> {
             await db.put('books', {
                 id: book.id,
                 name: edit.name ?? book.name,
-                version: book.version + 1,
+                version: edit.version,
                 has_pending_writes: true,
                 created_at: book.created_at,
-                updated_at: Date.now()
+                updated_at: edit.updated_at
             })
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'book.edit',
                 payload: edit
             })
@@ -172,13 +198,14 @@ export async function make_database(): Promise<DatabaseStore> {
                 book_id,
 
                 version: 1,
-                has_pending_writes: false,
+                has_pending_writes: true,
                 created_at,
                 updated_at: created_at
             }
             let res = await db.put('playlists', value)
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'playlist.create',
                 payload: value
             })
@@ -189,6 +216,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let res = await db.delete('playlists', id)
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'playlist.delete',
                 payload: id
             })
@@ -204,13 +232,14 @@ export async function make_database(): Promise<DatabaseStore> {
                 id: playlist.id,
                 book_id: edit.book_id ?? playlist.book_id,
                 name: edit.name ?? playlist.name,
-                version: playlist.version + 1,
+                version: edit.version,
                 has_pending_writes: true,
                 created_at: playlist.created_at,
-                updated_at: Date.now()
+                updated_at: edit.updated_at
             })
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'playlist.edit',
                 payload: edit
             })
@@ -223,7 +252,7 @@ export async function make_database(): Promise<DatabaseStore> {
                 pgn,
                 name,
                 version: 1,
-                has_pending_writes: false,
+                has_pending_writes: true,
                 created_at,
                 updated_at: created_at
             }
@@ -231,6 +260,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let res = await db.put('lines', value)
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'line.create',
                 payload: value
             })
@@ -241,6 +271,7 @@ export async function make_database(): Promise<DatabaseStore> {
             let res = await db.delete('lines', id)
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'line.delete',
                 payload: id
             })
@@ -257,13 +288,14 @@ export async function make_database(): Promise<DatabaseStore> {
                 playlist_id: edit.playlist_id ?? line.playlist_id,
                 name: edit.name ?? line.name,
                 pgn: edit.pgn ?? line.pgn,
-                version: line.version + 1,
+                version: edit.version,
                 has_pending_writes: true,
                 created_at: line.created_at,
-                updated_at: Date.now()
+                updated_at: edit.updated_at
             })
 
             await db.put('pending_mutations', {
+                id: gen_id(),
                 type: 'line.edit',
                 payload: edit
             })
@@ -283,14 +315,148 @@ export async function make_database(): Promise<DatabaseStore> {
         },
         async delete_moves(id: LineId) {
             const tx = db.transaction('moves', 'readwrite')
-            for await (const cursor of tx.store.iterate(id)) {
+            for await (const cursor of tx.store.index('by_line_id').iterate(id)) {
                 await cursor.delete()
             }
             await tx.done
         },
-        async delete_pending_mutation(id: PendingMutationId) {
-            return await db.delete('pending_mutations', id)
+        async delete_mutations(ids: PendingMutationId[]) {
+            const tx = db.transaction('pending_mutations', 'readwrite')
+            for (let id of ids) tx.store.delete(id)
+            await tx.done
+        },
+        async apply_mutations(mutations: AppMutation[]) {
+            for (let mutation of mutations) {
+                switch (mutation.type) {
+                    case 'book.create':
+                        await apply_book_create(mutation.payload)
+                        break
+                    case 'playlist.create':
+                        await apply_playlist_create(mutation.payload)
+                        break
+                    case 'line.create':
+                        await apply_line_create(mutation.payload)
+                        break
+                    case 'book.delete':
+                        await apply_book_delete(mutation.payload)
+                        break
+                    case 'playlist.delete':
+                        await apply_playlist_delete(mutation.payload)
+                        break
+                    case 'line.delete':
+                        await apply_line_delete(mutation.payload)
+                        break
+                    case 'book.edit':
+                        await apply_book_edit(mutation.payload)
+                        break
+                    case 'playlist.edit':
+                        await apply_playlist_edit(mutation.payload)
+                        break
+                    case 'line.edit':
+                        await apply_line_edit(mutation.payload)
+                        break
+                }
+            }
+        },
+        async set_sync_state(state: SyncState) {
+            await db.put('sync_state', state)
         }
+    }
+
+    async function apply_book_create(book: BookAdd) {
+        await db.put('books', {
+            id: book.id,
+            name: book.name,
+            version: 1,
+            created_at: book.created_at,
+            updated_at: book.updated_at,
+            has_pending_writes: false
+        })
+    }
+
+    async function apply_playlist_create(value: PlaylistAdd) {
+        await db.put('playlists', {
+            id: value.id,
+            book_id: value.book_id,
+            name: value.name,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+            version: 1,
+            has_pending_writes: false
+        })
+    }
+    async function apply_line_create(value: LineAdd) {
+        await db.put('lines', {
+            id: value.id,
+            playlist_id: value.playlist_id,
+            name: value.name,
+            pgn: value.pgn,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+            version: 1,
+            has_pending_writes: false
+        })
+    }
+
+    async function apply_book_delete(id: BookId) {
+        await db.delete('books', id)
+    }
+    async function apply_playlist_delete(id: PlaylistId) {
+        await db.delete('playlists', id)
+    }
+    async function apply_line_delete(id: LineId) {
+        await db.delete('lines', id)
+        const tx = db.transaction('moves', 'readwrite')
+        for await (const cursor of tx.store.index('by_line_id').iterate(id)) {
+            await cursor.delete()
+        }
+        await tx.done
+    }
+
+    async function apply_book_edit(edit: BookEdit) {
+        let book = await db.get('books', edit.id)
+        if (!book) {
+            throw new BookNotFoundError(edit.id)
+        }
+        await db.put('books', {
+            id: book.id,
+            name: edit.name ?? book.name,
+            version: edit.version,
+            has_pending_writes: false,
+            created_at: book.created_at,
+            updated_at: edit.updated_at
+        })
+    }
+    async function apply_playlist_edit(edit: PlaylistEdit) {
+        let playlist = await db.get('playlists', edit.id)
+        if (!playlist) {
+            throw new PlaylistNotFoundError(edit.id)
+        }
+        await db.put('playlists', {
+            id: playlist.id,
+            book_id: edit.book_id ?? playlist.book_id,
+            name: edit.name ?? playlist.name,
+            version: edit.version,
+            has_pending_writes: false,
+            created_at: playlist.created_at,
+            updated_at: edit.updated_at
+        })
+    }
+    async function apply_line_edit(edit: LineEdit) {
+        let line = await db.get('lines', edit.id)
+        if (!line) {
+            throw new LineNotFoundError(edit.id)
+        }
+        await db.put('lines', {
+            id: line.id,
+            playlist_id: edit.playlist_id ?? line.playlist_id,
+            name: edit.name ?? line.name,
+            pgn: edit.pgn ?? line.pgn,
+            version: edit.version,
+            has_pending_writes: false,
+            created_at: line.created_at,
+            updated_at: edit.updated_at
+        })
     }
 
     return [state, actions]
@@ -298,6 +464,7 @@ export async function make_database(): Promise<DatabaseStore> {
 
 
 function create_tables(db: IDBPDatabase<LinechessDB>) {
+
     if (!db.objectStoreNames.contains('books')) {
 
         db.createObjectStore('books', {
@@ -328,5 +495,11 @@ function create_tables(db: IDBPDatabase<LinechessDB>) {
         })
         
         move_store.createIndex('by_line_id', 'line_id')
+    }
+
+    if (!db.objectStoreNames.contains('sync_state')) {
+        db.createObjectStore('sync_state', {
+            keyPath: 'id'
+        })
     }
 }

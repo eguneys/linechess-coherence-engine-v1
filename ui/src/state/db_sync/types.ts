@@ -1,18 +1,14 @@
 export type PendingMutationId = string
 
-export type PendingMutation<Type extends string, Payload> = {
-    id: PendingMutationId
-    mutation: Mutation<Type, Payload>
-}
-
 export interface Mutation<Type extends string, Payload> {
+    id: PendingMutationId
     type: Type,
     payload: Payload
 }
 
-export type MutationBookCreate = Mutation<'book.create', Book>
-export type MutationPlaylistCreate = Mutation<'playlist.create', Playlist>
-export type MutationLineCreate = Mutation<'line.create', Line>
+export type MutationBookCreate = Mutation<'book.create', BookAdd>
+export type MutationPlaylistCreate = Mutation<'playlist.create', PlaylistAdd>
+export type MutationLineCreate = Mutation<'line.create', LineAdd>
 
 export type MutationBookEdit = Mutation<'book.edit', BookEdit>
 export type MutationPlaylistEdit = Mutation<'playlist.edit', PlaylistEdit>
@@ -36,22 +32,54 @@ export type SyncState = {
 }
 
 
+export type BookAdd = {
+    id: BookId
+    name: string
+    created_at: Timestamp
+    updated_at: Timestamp
+}
+
+
 export type BookEdit = {
     id: BookId
+    version: number
     name?: string
+    updated_at: number
 }
+
+export type PlaylistAdd = {
+    id: PlaylistId
+    book_id: BookId
+    name: string
+    created_at: Timestamp
+    updated_at: Timestamp
+}
+
 
 export type PlaylistEdit = {
     id: PlaylistId
+    version: number
     book_id?: BookId
     name?: string
+    updated_at: number
+}
+
+export type LineAdd = {
+    id: LineId
+    playlist_id: PlaylistId
+    name: string
+    pgn: string
+    created_at: Timestamp
+    updated_at: Timestamp
 }
 
 export type LineEdit = {
     id: LineId
+    version: number
     playlist_id?: PlaylistId
     name?: string
     pgn?: string
+    updated_at: number
 }
 
 export type Timestamp = number
@@ -101,7 +129,6 @@ export type Move = {
     id: MoveId
     line_id: LineId
     ply: number
-    uci: UCI
     san: SAN
 }
 
