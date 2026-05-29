@@ -5,8 +5,9 @@ export async function find_diverge_for_moves(are_you_white: boolean, moves: SAN[
     return undefined
 }
 
-export async function get_processed_lichess_game_by_id(id: LichessGameId) {
+export async function get_processed_lichess_game_by_ids(ids: LichessGameId[]) {
 
+    return ids
 }
 
 export async function save_processed_games_progress(ids: LichessGameId[]) {

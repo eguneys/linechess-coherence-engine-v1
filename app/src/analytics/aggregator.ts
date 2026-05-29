@@ -60,8 +60,11 @@ export function make_game_aggregator(username: string, since: number) {
         games = games.slice(0, 500)
 
         let res: NormalizedGame[] = []
+
+        let existingIds = await db.get_processed_lichess_game_by_ids(games.map(_ => _.id))
+
         for (let game of games) {
-            let is_duplicate = (await db.get_processed_lichess_game_by_id(game.id)) !== undefined
+            let is_duplicate = existingIds.find(_ => _ === game.id)
             if (!is_duplicate) {
                 res.push(game)
             }
