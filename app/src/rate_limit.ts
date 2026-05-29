@@ -1,5 +1,7 @@
+import { LRUCache } from 'lru-cache/raw'
 import { db } from './db_init.js'
 import { log } from './logging.js'
+import { DEV } from './config.js'
 
 export class RateLimitError extends Error {}
 
@@ -52,7 +54,9 @@ async function rateLimitDb(
 }
 
 
-const rateLimitCache = new Map<string, RateLimit>
+const rateLimitCache = new LRUCache<string, RateLimit>({
+  max: 10_000
+})
 
 export async function rateLimit(
   userId: string,
@@ -60,6 +64,9 @@ export async function rateLimit(
   limit: number,
   windowSeconds: number
 ) {
+
+  if (DEV) return
+
   const key = `${userId}:${endpoint}`
   const now = Date.now()
   const resetAt = new Date(now + windowSeconds * 1000).toISOString()
@@ -84,7 +91,7 @@ export async function rateLimit(
 
   if (row.count >= limit) {
     log('warn', `Hit Rate Limit ${row.count}/${limit} : ${userId}/${endpoint}`)
-    throw new RateLimitError()
+    throw new RateLimitError(`${userId}/${endpoint} ${row.count}/${limit}`)
   }
 
 }

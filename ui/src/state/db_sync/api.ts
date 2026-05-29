@@ -1,7 +1,7 @@
 import type { AppMutation } from "./types"
 
 export const API_ENDPOINT = import.meta.env.DEV ? 'http://localhost:3300' : `https://api.linechess.com`
-const $ = async (path: string, opts?: RequestInit) => {
+export const $ = async (path: string, opts?: RequestInit) => {
 
     const controller = new AbortController()
 
@@ -35,6 +35,8 @@ export async function $post(path: string, body: any = {}) {
     })
     return res
 }
+
+
 
 export type SyncApi = {
     pull(since: number): Promise<AppMutation[]>

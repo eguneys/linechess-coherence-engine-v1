@@ -2,28 +2,65 @@ import { BiRegularBrain } from "solid-icons/bi";
 import './Evaluator.scss'
 import { FiCompass, FiSearch } from "solid-icons/fi";
 import { BsQuestionSquare } from "solid-icons/bs";
-import { createSelector, createSignal, For, onCleanup, onMount } from "solid-js";
+import { createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
 import { A } from "@solidjs/router";
+import { useState } from "../state/State";
+import type { EvaluateAPIResult } from "../state/evaluate_api";
+import type { EvaluateUsername } from "../state/evaluate_state";
 
 export default function Evaluator() {
+
+    const [{ evaluate_state: state},{ evaluate_actions: { set_evaluate_username}}] = useState()
+
+    let $search_input!: HTMLInputElement
+
+    onMount(() => {
+        $search_input.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                set_evaluate_username($search_input.value)
+            }
+        })
+    })
+
     return (<>
         <main class='evaluator'>
             <div class='search-bar'>
                 <div class='title'><BiRegularBrain />Community Repertoire Analyzer</div>
                 <p>Evaluate any Lichess player's <b>Opening Fitness Score</b> against community opening repertoires. Every measured book will be compared, the best score will be shown. Calculated metrics will also be used to rank the most coherent repertoires. They are also publicly available for study.</p>
                 <div class='search'>
-                    <div class='icon-search'><FiSearch/><input name="search" spellcheck={false} autocorrect="off" autocomplete="off" type='text' placeholder='Enter an Lichess username...'></input></div>
-                    <button>Evaluate</button>
+                    <div class='icon-search'><FiSearch /><input ref={$search_input} name="search" spellcheck={false} autocorrect="off" autocomplete="off" type='text' placeholder='Enter an Lichess username...'></input></div>
+                    <button onClick={() => set_evaluate_username($search_input.value)}>Evaluate</button>
                 </div>
             </div>
             <div class='results'>
-                <Assesment/>
-                <RecentMatches/>
+                <Suspense fallback={<Loading />}>
+                    <Switch fallback={
+                        <RecentMatches/>
+                    }>
+                        <Match when={state.evaluate_username === 'not-found' || state.evaluate_username === undefined}>
+                            <NotFound />
+                        </Match>
+                    </Switch>
+                </Suspense>
             </div>
         </main>
     </>)
 }
 
+function EvaluateRes(props: { res: EvaluateUsername | 'not-found'}) {
+
+    return (<>
+    
+    </>)
+}
+
+function NotFound() {
+    return (<>
+    <div class='not-found'>
+        User not found
+    </div>
+    </>)
+}
 
 function RecentMatches() {
 

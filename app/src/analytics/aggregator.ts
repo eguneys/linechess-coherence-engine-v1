@@ -4,6 +4,7 @@ import { Color, DivergedGame, is_allowed_speed, LichessGameId, NormalizedGame } 
 import * as db from './db.js'
 import { Default_O_params, FitnessFromRecentMatches } from "./fitness2.js"
 import { get_move_fens_for_san_moves } from "./chess.js"
+import { LRUCache } from "lru-cache"
 
 function map_lichess_export_game_to_normalized(username: string, game: exportGameResponse): NormalizedGame | undefined {
 
@@ -48,10 +49,57 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
     }
 }
 
-export function make_game_aggregator(username: string, since: number) {
 
-    let games: NormalizedGame[] = []
+export function make_game_aggregator_cache() {
 
+    let cache_by_username = new LRUCache<Username, AggregatorCacheItem>({
+        max: 500,
+    })
+
+    function get_past_by_username(username: string) {
+
+        let res = cache_by_username.get(username)
+
+        if (!res) {
+            res = {
+                cached_since: 0,
+                games: [],
+                diverged: []
+            }
+        }
+
+        cache_by_username.set(username, res)
+
+        return {
+            games: make_game_aggregator(username, res.cached_since, res.games),
+            cached_since: res.cached_since,
+            diverged: res.diverged.slice(0)
+        }
+    }
+
+    function update_cached_since(username: string, since: number, diverged: DivergedGame[]) {
+        let res = cache_by_username.get(username)
+
+        if (res) {
+            res.cached_since = since
+            res.diverged.push(...diverged)
+        }
+    }
+
+    return {
+        get_past_by_username,
+        update_cached_since
+    }
+}
+
+export type Username = string
+export type AggregatorCacheItem = {
+    games: NormalizedGame[]
+    diverged: DivergedGame[]
+    cached_since: number
+}
+
+function make_game_aggregator(username: string, since: number, games: NormalizedGame[]) {
 
     function add_game(game: exportGameResponse) {
         let res = map_lichess_export_game_to_normalized(username, game)
@@ -61,7 +109,7 @@ export function make_game_aggregator(username: string, since: number) {
     }
 
     async function finish_games() {
-        games = games.slice(0, 500)
+        games.splice(0, games.length - 500)
 
 
         let existingIds = new Set(await db.get_processed_lichess_game_by_ids(games.map(_ => _.lichess_game_id)))
@@ -74,7 +122,7 @@ export function make_game_aggregator(username: string, since: number) {
 
 
         let fitness = FitnessFromRecentMatches(diverges, Default_O_params)
-        await db.add_fitness_score_to_rank_lines(fitness)
+        db.add_fitness_score_to_rank_lines(fitness)
 
         return diverges
     }

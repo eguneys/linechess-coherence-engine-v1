@@ -9,6 +9,7 @@ import { inc, metrics } from "./metrics.js";
 import { init_lichess_auth_routes } from "./lichess_oauth.js";
 import { get_existing_user_by_userId } from "./db_layer.js";
 import { init_sync_routes } from "./sync_routes.js";
+import { init_analytics_routes } from "./analytics/routes.js";
 
 
 export const gen_id8 = () => Math.random().toString(16).slice(2, 10)
@@ -20,6 +21,23 @@ class InvalidHashError extends Error {}
 
 export const router = Router()
 
+router.use(async (req, res, next) => {
+    try {
+        let ip = req.ip
+        if (ip) {
+            await rateLimit(ip, 'ip_fast', 15, 5)
+            await rateLimit(ip, 'ip_hour', 100, 3600)
+        }
+    } catch (error) {
+        if (error instanceof RateLimitError) {
+            return res.status(429).json({
+                error: 'Too many requests, please try again later'
+            })
+        }
+    }
+
+    next()
+})
 
 init_lichess_auth_routes(router)
 
@@ -27,6 +45,7 @@ init_account_auth_routes(router)
 
 init_sync_routes(router)
 
+init_analytics_routes(router)
 
 function init_account_auth_routes(router: Router) {
 

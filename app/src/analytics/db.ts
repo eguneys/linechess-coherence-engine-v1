@@ -35,7 +35,7 @@ export async function batched_find_diverge_for_moves(na: NormalizedGame[]): Prom
   WHERE s.fen IN (${placeholders})
 `);
 
-    const results: FenStepLineInABook[] = query.all(JSON.stringify(placeholders)).map((_: any) => {
+    const results: FenStepLineInABook[] = query.all(searchTerms).map((_: any) => {
         return {
             fen_step: {
                 id: _.fen_step.id,
@@ -98,8 +98,8 @@ export async function get_processed_lichess_game_by_ids(ids: LichessGameId[]) {
   WHERE g.lichess_game_id IN (${placeholders})
 `);
 
-    const results: LichessGameId[] = query.all(JSON.stringify(placeholders))
-        .map<LichessGameId>((_: any) => _)
+    const results: LichessGameId[] = query.all(ids)
+        .map<LichessGameId>((_: any) => _.lichess_game_id)
 
     return results
 }

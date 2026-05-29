@@ -1,27 +1,46 @@
 import { log } from "../logging.js";
-import { make_game_aggregator, NormalizedGame } from "./aggregator.js";
+import { make_game_aggregator_cache } from "./aggregator.js";
 import { create_lichess_agent } from "./fetch_lichess.js";
 import { QPJ_Manager } from "./job.js";
 import { YesterdayMs } from "./time.js";
+import { DivergedGame } from "./types.js";
+
+
+export class FetchGamesSinceError extends Error {}
 
 let lichess_api = create_lichess_agent()
+let aggregator_cache = make_game_aggregator_cache()
 
-let qpj_manager = new QPJ_Manager<NormalizedGame[]>(async (username: string, since: number) => {
+const FETCH_THRESHOLD = 1000 * 30
+
+let qpj_manager = new QPJ_Manager<DivergedGame[]>(async (username: string, since: number) => {
 
     let since_until_yesterday = Math.max(since, YesterdayMs())
 
-    let { cancel, stream } = lichess_api.fetch_games(username, since_until_yesterday)
+    let { games, cached_since, diverged } = aggregator_cache.get_past_by_username(username)
 
-    let games = make_game_aggregator(username, since)
+    let missingDuration = Math.max(0, since_until_yesterday - cached_since)
 
     try {
-        for await (const game of stream) {
-            games.add_game(game)
+
+        console.log(missingDuration, FETCH_THRESHOLD)
+        if (missingDuration > FETCH_THRESHOLD) {
+            console.log('fetching now')
+            let { cancel, stream } = lichess_api.fetch_games(username, since_until_yesterday)
+            for await (const game of stream) {
+                games.add_game(game)
+            }
+            let res = await games.finish_games()
+
+            aggregator_cache.update_cached_since(username, since_until_yesterday, res)
+
+            return [...res, ...diverged]
         }
+
+        return diverged
     } catch (error) {
         log('error', `Stream disrupted or cancelled: ${error}`)
-    } finally {
-        return await games.finish_games()
+        throw new FetchGamesSinceError(`${error}`)
     }
 })
 
@@ -35,7 +54,7 @@ export async function serve_username_query(username_query: string) {
 
     let username
     try {
-        username = (await lichess_api.fetch_username(username_query))?.username
+        username = await lichess_api.fetch_username(username_query)
     } catch (e) {
         throw new ErrorFetchingUsername(username_query)
     }

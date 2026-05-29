@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { Router } from 'express'
 import { WEB_DOMAIN } from './config.js'
 import { set_or_create_new_lichess_user } from './services.js'
+import { rateLimit } from './rate_limit.js'
 
 const clientId = 'linechess-api'
 
@@ -18,6 +19,7 @@ const createChallenge = (verifier: string) => base64URLEncode(sha256(verifier))
 
 export function init_lichess_auth_routes(router: Router) {
     router.get('/login', async (req, res) => {
+
         const url = req.protocol + '://' + req.get('host') + req.baseUrl
 
         const verifier = createVerifier()
