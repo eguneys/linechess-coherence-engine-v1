@@ -17,11 +17,12 @@ export class QPJ_Manager<T> {
 
     jobs: QueryPlayerJob<T>[]
     private readonly SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000 // 1 day MS
+    private readonly MAX_QUEUE_SIZE = 1000
 
     constructor(private do_work: (username: string, since: number) => Promise<T[]>) {
         this.jobs = []
 
-        setInterval(() => this.sweep, this.SWEEP_INTERVAL_MS)
+        setInterval(() => this.sweep(), this.SWEEP_INTERVAL_MS)
     }
 
     search_username(username: string) {
@@ -55,10 +56,10 @@ export class QPJ_Manager<T> {
         if (this.syncing) return
         this.syncing = true
 
-        while (true) {
+        while (this.jobs.length > 0) {
             let job = this.jobs[this.jobs.length - 1]
 
-            if (job === undefined || job.priority < 500) {
+            if (effective_priority(job) < 500) {
                 break
             }
 
@@ -110,9 +111,19 @@ export class QPJ_Manager<T> {
     on_job_queue_changed() {
         // 2 3 1000
         this.jobs.sort((a, b) => effective_priority(a)- effective_priority(b))
-        this.jobs.splice(1000)
+
+        if (this.jobs.length > this.MAX_QUEUE_SIZE) {
+
+            let deleted = this.jobs.splice(0, this.jobs.length - this.MAX_QUEUE_SIZE)
+
+            for (let d of deleted) {
+                d.rejects.forEach(reject => reject(new JobTimeoutError()))
+            }
+        }
     }
 }
 
 const HOUR_MS = 60 * 60 * 1000
 const effective_priority = <T>(a: QueryPlayerJob<T>) => a.priority + (Date.now() - a.since_ms) / HOUR_MS
+
+export class JobTimeoutError extends Error {}

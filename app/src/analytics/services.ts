@@ -23,9 +23,7 @@ let qpj_manager = new QPJ_Manager<DivergedGame>(async (username: string, since: 
 
     try {
 
-        console.log(missingDuration, FETCH_THRESHOLD)
         if (missingDuration > FETCH_THRESHOLD) {
-            console.log('fetching now')
             let { cancel, stream } = lichess_api.fetch_games(username, since_until_yesterday)
             for await (const game of stream) {
                 games.add_game(game)
