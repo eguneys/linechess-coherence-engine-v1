@@ -1,14 +1,13 @@
-import type { OpeningLineModelWithList } from "./idb_model"
-import type { RecentMatch } from "./types"
+import { DivergedGame, Line, LineInABook, NormalizedGame } from "./types.js"
 
 export type PerGameLineFitness = {
-    match: RecentMatch
+    match: DivergedGame
     divergence_model?: DivergenceModel
     Fitness_Score?: number
 }
 
 export type DivergenceModel = {
-    best_matching_opening_line: OpeningLineModelWithList
+    best_matching_opening_line: LineInABook
     Pmax: number // max comparable ply in the opening line
     Py?: number // ply where You diverged
     Po?: number // ply where Opponent diverged
@@ -122,10 +121,10 @@ export type FitnessScore2 = {
 
 function Fitness(dd: PerGameLineFitness[], params: Overall_Params): FitnessScore2 {
 
-    let Nb = dd.filter(_ => _.match.speed === 'bullet')
-    let Nz = dd.filter(_ => _.match.speed === 'blitz')
-    let Nr = dd.filter(_ => _.match.speed === 'rapid')
-    let Nc = dd.filter(_ => _.match.speed === 'classical')
+    let Nb = dd.filter(_ => _.match.game.speed === 'bullet')
+    let Nz = dd.filter(_ => _.match.game.speed === 'blitz')
+    let Nr = dd.filter(_ => _.match.game.speed === 'rapid')
+    let Nc = dd.filter(_ => _.match.game.speed === 'classical')
 
     let NAll = [...Nb, ...Nz, ...Nr, ...Nc]
 
@@ -166,7 +165,7 @@ function Fitness(dd: PerGameLineFitness[], params: Overall_Params): FitnessScore
     }
 }
 
-export function FitnessFromRecentMatches(rr: RecentMatch[], params: Overall_Params) {
+export function FitnessFromRecentMatches(rr: DivergedGame[], params: Overall_Params) {
     let dd: PerGameLineFitness[] = rr.map(match => ({
         match,
         divergence_model: get_divergence_model_for_match(match)
@@ -176,16 +175,16 @@ export function FitnessFromRecentMatches(rr: RecentMatch[], params: Overall_Para
 }
 
 
-function get_divergence_model_for_match(match: RecentMatch): DivergenceModel | undefined {
+function get_divergence_model_for_match(match: DivergedGame): DivergenceModel | undefined {
 
-    if (!match.opening.diverge) {
+    if (!match.diverge) {
         return undefined
     }
 
-    let Pmax = match.opening.diverge.most_matched_opening.moves.length
+    let Pmax = match.diverge.most_matched_line.moves.length
 
-    let Py = match.opening.diverge.did_you_diverge ? (match.opening.diverge.diverge_at_ply + 1) : undefined
-    let Po = !match.opening.diverge.did_you_diverge ? (match.opening.diverge.diverge_at_ply + 1) : undefined
+    let Py = match.diverge.did_you_diverge ? match.diverge.diverge_at_ply : undefined
+    let Po = !match.diverge.did_you_diverge ? match.diverge.diverge_at_ply : undefined
 
     if (Py === Pmax) {
         Py = undefined
@@ -195,7 +194,7 @@ function get_divergence_model_for_match(match: RecentMatch): DivergenceModel | u
     }
 
     let res: DivergenceModel = {
-        best_matching_opening_line: match.opening.diverge.most_matched_opening,
+        best_matching_opening_line: match.diverge.most_matched_line,
         Pmax,
         Py,
         Po
