@@ -15,11 +15,11 @@ export class QPJ_Manager {
     private timer: ReturnType<typeof setTimeout> | null = null
     private readonly SYNC_INTERVAL_MS = 60 * 1000
 
-    private immediate_sync_request = false
+    private should_sync_fast = false
 
     jobs: QueryPlayerJob[]
 
-    constructor(private on_work_username_since: (username: string, since: number) => Promise<void>) {
+    constructor(private do_work: (username: string, since: number) => Promise<void>) {
         this.jobs = []
     }
 
@@ -28,8 +28,6 @@ export class QPJ_Manager {
         if (existing) {
 
             existing.priority += 1000
-
-            this.jobs.push(existing)
         } else {
             this.jobs.push({
                 id: gen_id8(),
@@ -43,7 +41,7 @@ export class QPJ_Manager {
         this.kick()
     }
 
-    async work_one_step() {
+    async run() {
 
         if (this.syncing) return
         this.syncing = true
@@ -54,7 +52,7 @@ export class QPJ_Manager {
         try {
 
             if (job) {
-                await this.on_work_username_since(job.username, job.since_ms)
+                await this.do_work(job.username, job.since_ms)
                 job.priority = 0
             }
 
@@ -68,8 +66,8 @@ export class QPJ_Manager {
             }
 
             this.syncing = false
-            if (this.immediate_sync_request) {
-                this.immediate_sync_request = false
+            if (this.should_sync_fast) {
+                this.should_sync_fast = false
                 this.queueNextRun(500)
             } else {
                 this.queueNextRun(this.SYNC_INTERVAL_MS)
@@ -79,7 +77,7 @@ export class QPJ_Manager {
 
     kick() {
         this.clearTimer()
-        this.immediate_sync_request = true
+        this.should_sync_fast = true
 
         if (this.syncing) return
 
@@ -96,12 +94,13 @@ export class QPJ_Manager {
     private queueNextRun(delayMs: number) {
         this.clearTimer()
         this.timer = setTimeout(() => {
-            this.work_one_step()
+            this.run()
         }, delayMs)
     }
 
     on_job_queue_changed() {
         // 2 3 1000
         this.jobs.sort((a, b) => a.priority - b.priority)
+        this.jobs.splice(0, 1000)
     }
 }
