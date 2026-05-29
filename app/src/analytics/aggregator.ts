@@ -3,8 +3,9 @@ import { gen_id8 } from "../controller.js"
 import { Color, DivergedGame, is_allowed_speed, LichessGameId, NormalizedGame } from "./types.js"
 import * as db from './db.js'
 import { Default_O_params, FitnessFromRecentMatches } from "./fitness2.js"
+import { get_move_fens_for_san_moves } from "./chess.js"
 
-function map_lichess_export_game_to_normalized(username: string, game: exportGameResponse) {
+function map_lichess_export_game_to_normalized(username: string, game: exportGameResponse): NormalizedGame | undefined {
 
     if (game.variant !== 'standard') {
         return undefined
@@ -28,6 +29,8 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
     let did_you_win = game.winner === you
     let did_you_draw = game.status === 'draw'
 
+    let move_fens = get_move_fens_for_san_moves(game.moves.split(' '))
+
     return {
         id: gen_id8(),
         lichess_game_id: game.id,
@@ -37,7 +40,8 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
         white,
         black,
         speed: game.speed,
-        played_moves: game.moves.split(' '),
+        san_moves: game.moves,
+        move_fens,
         you,
         did_you_win,
         did_you_draw
@@ -59,26 +63,15 @@ export function make_game_aggregator(username: string, since: number) {
     async function finish_games() {
         games = games.slice(0, 500)
 
-        let res: NormalizedGame[] = []
 
-        let existingIds = await db.get_processed_lichess_game_by_ids(games.map(_ => _.id))
+        let existingIds = new Set(await db.get_processed_lichess_game_by_ids(games.map(_ => _.lichess_game_id)))
 
-        for (let game of games) {
-            let is_duplicate = existingIds.find(_ => _ === game.id)
-            if (!is_duplicate) {
-                res.push(game)
-            }
-        }
+        const res: NormalizedGame[] = games.filter(game => !existingIds.has(game.lichess_game_id))
 
         await db.save_processed_games_progress(res.map(_ => _.lichess_game_id))
 
-        let diverges = await Promise.all(res.map(async game => ({
-            game,
-            diverge: (
-                await db.find_diverge_for_moves(
-                    game.white.toLowerCase() === game.you.toLowerCase(), game.played_moves)
-            )
-        })))
+        let diverges = await db.batched_find_diverge_for_moves(res)
+
 
         let fitness = FitnessFromRecentMatches(diverges, Default_O_params)
         await db.add_fitness_score_to_rank_lines(fitness)

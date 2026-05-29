@@ -1,11 +1,20 @@
 import { openingSpeeds } from "./fetch_lichess.js"
 
+export type FenStepId = string
+export type FenStep = {
+    id: FenStepId
+    line_id: LineId
+    ply: number
+    fen: string
+    san: SAN
+}
+
 export type LineId = string
 export type Line = {
     id: LineId
     playlist_id: PlaylistId
     name: string
-    pgn: string
+    san_moves: string
 }
 
 export type PlaylistId = string
@@ -21,15 +30,15 @@ export type Book = {
     name: string
 }
 
-export type LineInABook = {
+export type FenStepLineInABook = {
     playlist: Playlist
     book: Book
     line: Line
-    moves: SAN[]
+    fen_step: FenStep
 }
 
 export type Diverge = {
-    most_matched_line: LineInABook
+    most_matched_line: FenStepLineInABook
     diverge_at_ply: number
     did_you_diverge: boolean
 }
@@ -49,7 +58,8 @@ export type NormalizedGame = {
     id: NormalizedGameId
     lichess_game_id: LichessGameId
     speed: AllowedSpeed
-    played_moves: SAN[]
+    san_moves: string
+    move_fens: string[]
     created_at: number
     last_move_at: number
     is_rated: boolean

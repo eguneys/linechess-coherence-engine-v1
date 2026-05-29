@@ -26,6 +26,7 @@
     "@types/express-session": "^1.19.0",
     "better-sqlite3": "^12.5.0",
     "body-parser": "^2.2.1",
+    "chessops": "^0.15.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.2.1",
