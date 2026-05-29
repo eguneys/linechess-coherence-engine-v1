@@ -16,9 +16,11 @@ $s3: $spacing * 3;
 $s35: $spacing * 3.5;
 $s4: $spacing * 4;
 $m0: $spacing_m * 0.5;
+$m05: $spacing_m * 0.75;
 $m1: $spacing_m * 1;
 $m15: $spacing_m * 1.5;
 $m2: $spacing_m * 2;
+$m225: $spacing_m * 2.25;
 $m25: $spacing_m * 2.5;
 $m3: $spacing_m * 3;
 $m35: $spacing_m * 3.5;
@@ -62,6 +64,9 @@ $grey0: color.adjust(
 $grey-1: color.adjust($grey0, $lightness: 10%);
 $grey-2: color.adjust($grey0, $lightness: 20%);
 $grey-3: color.adjust($grey0, $lightness: 30%);
+$grey-4: color.adjust($grey0, $lightness: 40%);
+$grey-45: color.adjust($grey0, $lightness: 45%);
+$grey-5: color.adjust($grey0, $lightness: 50%);
 $grey1: color.adjust($grey0, $lightness: -10%);
 $grey2: color.adjust($grey0, $lightness: -20%);
 
@@ -92,6 +97,7 @@ $navy5: color.adjust($navy0,  $hue: 20deg, $saturation: -80%, $lightness: -40%);
 
 
 $purple0: color.adjust(color.mix(purple, blue, 87%), $saturation: -30%);
+$purple-6-a: color.adjust($purple0, $lightness: 45%, $hue: 10deg, $saturation: 90%, $alpha: -.8);
 $purple-6: color.adjust($purple0, $lightness: 45%, $hue: 10deg, $saturation: 90%);
 $purple-3-a: color.adjust($purple0, $lightness: 20%, $alpha: -0.9);
 $purple-3: color.adjust($purple0, $lightness: 30%);
@@ -106,7 +112,7 @@ $white2: color.adjust($white0, $lightness: -20%);
 $white3: color.adjust($white0, $lightness: -30%);
 $white5: color.adjust($white0, $lightness: -40%);
 $black0: color.adjust(
-          color.mix(black, navy, $weight: 80%), $saturation: -3%, $lightness: -30%);
+          color.mix(black, lightblue, $weight: 80%), $saturation: -3%, $lightness: -30%);
 $black025: color.adjust($black0, $lightness:  2.5%);
 $black03: color.adjust($black0, $lightness:  3%);
 $black05: color.adjust($black0, $lightness:  5%);

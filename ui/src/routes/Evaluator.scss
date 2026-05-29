@@ -3,15 +3,140 @@
 main.evaluator {
     display: grid;
 
-    grid-template-areas: 'search';
+    grid-template-areas: 'search'
+                         'results'
+                         'recent';
+    
+    gap: variables.$m05;
 
     .search-bar {
         grid-area: search;
+    }
+
+    .results {
+        grid-area: results;
+    }
+
+    .recent-matches {
+        grid-area: recent;
+    }
+}
+
+main.evaluator {
+    .recent-matches {
+        display: flex;
+        flex-flow: column;
+        padding: variables.$m2;
+        @include variables.rounded-shadow;
+        margin: variables.$s1;
+
+        &> .title {
+            display: flex;
+            align-items: center;
+            gap: variables.$s3;
+            @include variables.google-sans-flex(600);
+            color: variables.$grey0;
+            font-size: variables.$m25;
+            @include variables.looser;
+            padding: variables.$m3 0;
+
+            svg {
+                color: variables.$green0;
+            }
+        }
+
+        .list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: variables.$s2;
+
+            @include variables.respond-to('lg') {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+
+            .item {
+                padding: variables.$s3;
+                display: flex;
+                flex-flow: column;
+                @include variables.rounded-shadow;
+
+                .title {
+
+                    font-size: variables.$m225;
+                    padding: variables.$s2 0;
+                    display: flex;
+                    justify-content: space-between;
+                   @include variables.google-sans-flex(600);
+                   @include variables.loose;
+
+                   .time {
+                     @include variables.rounded-shadow;
+                     padding: variables.$s1;
+                     background: variables.$grey-45;
+                     font-size: variables.$m2;
+                     color: variables.$grey2;
+                     text-transform: uppercase;
+                     line-height: variables.$s3;
+                     align-self: flex-end;
+                     padding-inline: variables.$s2;
+                   }
+                }
+
+                p {
+                    padding: variables.$s3 0;
+                    display: flex;
+                    flex-flow:wrap;
+                    gap: variables.$s2;
+                    color: variables.$grey0;
+                   @include variables.google-sans-flex(400);
+
+                   .line-name, .book-name, .author {
+                    color: variables.$navy-3;
+                   @include variables.google-sans-flex(500);
+                   }
+                }
+
+                .pgn {
+                    @include variables.aldrich;
+                    border: variables.$px solid variables.$grey-3;
+                    border-radius: variables.$s0;
+                    padding: variables.$s2;
+                }
+
+                .footer {
+                    display: flex;
+                    align-items: flex-end;
+
+                    .long {
+                        flex: 1;
+                    }
+                    .score {
+                        text-transform: uppercase;
+                        @include variables.aldrich;
+                        font-weight: 500;
+                        color: variables.$green0;
+                    }
+
+                    .result {
+                        @include variables.google-sans-flex(500);
+                        color: variables.$grey-1;
+                        text-transform: uppercase;
+                        font-size: variables.$m15;
+                    }
+                }
+            }
+        }
     }
 }
 
 main.evaluator {
 
+    .results {
+        display: flex;
+        flex-flow: column;
+        @include variables.rounded-shadow;
+    }
 
     .search-bar {
 
@@ -20,12 +145,58 @@ main.evaluator {
         flex-flow: column;
         align-items: center;
         @include variables.rounded-shadow;
+    }
+    .results {
+
+        .how {
+            padding: variables.$l0;
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            gap: variables.$s1;
+
+           svg {
+            font-size: variables.$l05;
+            color: variables.$grey0;
+           }
+
+           .title {
+            display: flex;
+            align-items: center;
+
+            font-size: variables.$l0;
+            @include variables.google-sans-flex(600);
+            text-transform: uppercase;
+            @include variables.loose;
+            gap: variables.$m1;
+           }
+
+           p {
+
+            text-indent: variables.$s1;
+            @include variables.google-sans-flex(400);
+            color: variables.$grey0;
+            text-align: left;
+
+                &.highlight {
+                    text-indent: 0;
+                    padding: variables.$s2;
+                    background: variables.$white3;
+                    text-align: center;
+                    @include variables.google-sans-flex(500);
+                }
+           }
+        }
+    }
+
+    .search-bar {
 
         .title {
             display: flex;
             align-items: center;
 
-            font-size: variables.$l03;
+
+            @include variables.responsive-font(12, 40);
             @include variables.google-sans-flex(600);
             text-transform: uppercase;
             @include variables.loose;
@@ -37,15 +208,27 @@ main.evaluator {
 
         p {
             
+            @include variables.responsive-font(8, 24);
             @include variables.google-sans-flex(400);
             color: variables.$grey0;
             padding-inline: variables.$l0;
             text-align: center;
+
+            b {
+                text-transform: uppercase;
+            }
+
         }
 
         .search {
             margin: variables.$m2;
             display: flex;
+            flex-flow: column;
+
+            @include variables.respond-to("md") {
+                flex-flow: row;
+            }
+    
             gap: variables.$m1;
 
             .icon-search {
@@ -57,9 +240,18 @@ main.evaluator {
 
                 input {
                     padding: variables.$m1;
-                    width: 20em;
                     background: variables.$white0;
                     color: variables.$black3;
+                    width: 12em;
+
+                    @include variables.respond-to("sm") {
+                        width: 20em;
+                    }
+                    
+
+                    @include variables.respond-to("md") {
+                        width: 30em;
+                    }
                     
                     &:focus {
                         outline: none;
@@ -92,4 +284,142 @@ main.evaluator {
         }
     }
 
+}
+
+main.evaluator {
+    .results {
+    .loading {
+        display: flex;
+        flex-flow: column;
+
+        .spinner {
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: variables.$l0;
+                .dot {
+                    font-size: variables.$l1;
+                    @include variables.google-sans-flex(700);
+                    padding-bottom: variables.$l1;
+                    transition: .4s;
+
+                    &.one {
+                        padding-bottom: 0;
+                        color: variables.$navy-3;
+                        transition: .2s;
+                    }
+                }
+        }
+        .title {
+          display: flex;
+          align-items: center;
+          align-self: center;
+ 
+
+          @include variables.responsive-font(12, 25);
+          @include variables.google-sans-flex(600);
+          text-transform: uppercase;
+          @include variables.loose;
+          gap: variables.$m1;
+        }
+    }
+  }
+}
+
+
+
+main.evaluator {
+    .assesment {
+        display: flex;
+        flex-flow: column;
+
+        @include variables.respond-to("md") {
+            flex-flow: row;
+        }
+
+        gap: variables.$m3;
+        padding: variables.$l0;
+
+        .ofs {
+            flex: 1;
+        }
+
+        .right {
+            flex: 2;
+        }
+
+        .right {
+
+            .bars {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: variables.$l0;
+            }
+        }
+    }
+
+
+    .assesment {
+        .right {
+            .title {
+
+                @include variables.responsive-font(12, 25);
+               @include variables.google-sans-flex(600);
+               text-transform: uppercase;
+            }
+        }
+    }
+}
+
+main.evaluator {
+    .onebar-label, .ofsbar-label {
+        display: flex;
+        flex-flow: column;
+        position: relative;
+
+        .label {
+            display: flex;
+            justify-content: space-between;
+            @include variables.google-sans-flex(500);
+        }
+
+        .bar-bg {
+          background: variables.$purple-6-a;
+        }
+            .bar {
+            background: variables.$green-3;
+            width: attr(data-progress);
+        }
+    }
+
+    .onebar-label {
+        .label {
+            text-transform: capitalize;
+            color: variables.$grey2;
+
+            .value {
+                color: variables.$black4;
+            }
+        }
+        .bar { height: .6em; }
+    }
+
+    .ofsbar-label {
+
+        .label {
+            text-transform: uppercase;
+            color: variables.$grey2;
+            display: flex;
+            align-items: flex-end;
+
+            .value {
+                color: variables.$black2;
+                font-size: variables.$l0;
+            }
+        }
+        .bar {
+            height: 1em;
+        }
+    }
 }

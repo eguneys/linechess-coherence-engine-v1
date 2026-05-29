@@ -32,6 +32,19 @@ body {
 }
 
 
+a {
+    color: variables.$navy15;
+    text-decoration: none;
+
+
+    &:visited {
+        color: variables.$navy2;
+    }
+    &.out {
+        font-weight: bold;
+    }
+}
+
 
 .main-wrapper {
     display: grid;
@@ -215,6 +228,10 @@ header {
            border-bottom: variables.$s0 solid transparent;
            &.active {
               border-bottom: variables.$s0 solid variables.$green-3;
+           }
+
+           &:visited {
+              color: variables.$green-3;
            }
         }
     }
