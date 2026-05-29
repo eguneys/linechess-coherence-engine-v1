@@ -101,6 +101,6 @@ export class QPJ_Manager {
     on_job_queue_changed() {
         // 2 3 1000
         this.jobs.sort((a, b) => a.priority - b.priority)
-        this.jobs.splice(0, 1000)
+        this.jobs.splice(1000)
     }
 }
