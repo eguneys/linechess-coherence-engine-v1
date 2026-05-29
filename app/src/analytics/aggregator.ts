@@ -122,7 +122,7 @@ function make_game_aggregator(username: string, since: number, games: Normalized
 
 
         let fitness = FitnessFromRecentMatches(diverges, Default_O_params)
-        db.add_fitness_score_to_rank_lines(fitness)
+        void db.add_fitness_score_to_rank_lines(fitness)
 
         return diverges
     }

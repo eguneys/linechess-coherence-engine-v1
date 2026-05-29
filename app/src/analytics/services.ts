@@ -13,7 +13,7 @@ let aggregator_cache = make_game_aggregator_cache()
 
 const FETCH_THRESHOLD = 1000 * 30
 
-let qpj_manager = new QPJ_Manager<DivergedGame[]>(async (username: string, since: number) => {
+let qpj_manager = new QPJ_Manager<DivergedGame>(async (username: string, since: number) => {
 
     let since_until_yesterday = Math.max(since, YesterdayMs())
 

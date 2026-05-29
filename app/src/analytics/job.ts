@@ -8,26 +8,25 @@ export type QueryPlayerJob<T> = {
     username: string
     since_ms: number
     priority: number
-    resolves: ((t: T) => void)[]
+    resolves: ((t: T[]) => void)[]
     rejects: ((err: unknown) => void)[]
 }
 
 export class QPJ_Manager<T> {
     private syncing = false
-    private timer: ReturnType<typeof setTimeout> | null = null
-    private readonly SYNC_INTERVAL_MS = 60 * 1000
-
-    private should_sync_fast = false
 
     jobs: QueryPlayerJob<T>[]
+    private readonly SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000 // 1 day MS
 
-    constructor(private do_work: (username: string, since: number) => Promise<T>) {
+    constructor(private do_work: (username: string, since: number) => Promise<T[]>) {
         this.jobs = []
+
+        setInterval(() => this.sweep, this.SWEEP_INTERVAL_MS)
     }
 
     search_username(username: string) {
         let existing = this.jobs.find(_ => _.username === username)
-        let res = new Promise<T>((resolve, reject) => {
+        let res = new Promise<T[]>((resolve, reject) => {
             if (existing) {
 
                 existing.priority += 1000
@@ -56,73 +55,56 @@ export class QPJ_Manager<T> {
         if (this.syncing) return
         this.syncing = true
 
+        while (true) {
+            let job = this.jobs[this.jobs.length - 1]
 
-        let job = this.jobs[this.jobs.length - 1]
-
-        try {
-
-            if (job) {
-                let startedAt = Date.now()
-                let res = await this.do_work(job.username, job.since_ms)
-                job.priority = 0
-                job.since_ms = startedAt
-
-                job.resolves.forEach(_ => _(res))
-                job.resolves = []
-                job.rejects = []
+            if (job === undefined || job.priority < 500) {
+                break
             }
 
-        } catch (error) {
-            console.error("Sync failed:", error)
-            if (job) {
-                job.rejects.forEach(r => r(error))
-                job.rejects = []
-                job.resolves = []
-            }
-        } finally {
+            try {
 
-            if (job) {
-                job.priority = Math.max(0, job.priority - 333)
-                this.on_job_queue_changed()
-            }
+                if (job) {
+                    let startedAt = Date.now()
+                    let res = await this.do_work(job.username, job.since_ms)
+                    job.priority = 0
+                    job.since_ms = startedAt
 
-            this.syncing = false
-            if (this.should_sync_fast) {
-                this.should_sync_fast = false
-                this.queueNextRun(500)
-            } else {
-                this.queueNextRun(this.SYNC_INTERVAL_MS)
+                    job.resolves.forEach(_ => _(res))
+                    job.resolves = []
+                    job.rejects = []
+                }
+
+            } catch (error) {
+                console.error("Sync failed:", error)
+                if (job) {
+                    job.rejects.forEach(r => r(error))
+                    job.rejects = []
+                    job.resolves = []
+                }
+            } finally {
+                if (job) {
+                    job.priority = Math.max(0, job.priority - 333)
+                    this.on_job_queue_changed()
+                }
             }
         }
+
+        this.syncing = false
+    }
+
+
+    private sweep() {
+        for (let job of this.jobs) {
+            job.priority += 1000
+        }
+        this.on_job_queue_changed()
     }
 
     kick() {
-        this.clearTimer()
-
         if (!this.syncing) {
             void this.run()
-            return
         }
-
-        this.should_sync_fast = true
-
-        if (this.syncing) return
-
-        this.queueNextRun(500)
-    }
-
-    private clearTimer() {
-        if (this.timer) {
-            clearTimeout(this.timer)
-            this.timer = null
-        }
-    }
-
-    private queueNextRun(delayMs: number) {
-        this.clearTimer()
-        this.timer = setTimeout(() => {
-            this.run()
-        }, delayMs)
     }
 
     on_job_queue_changed() {
