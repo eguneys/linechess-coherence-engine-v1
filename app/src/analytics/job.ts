@@ -9,6 +9,7 @@ export type QueryPlayerJob<T> = {
     since_ms: number
     priority: number
     resolves: ((t: T) => void)[]
+    rejects: ((err: unknown) => void)[]
 }
 
 export class QPJ_Manager<T> {
@@ -26,18 +27,20 @@ export class QPJ_Manager<T> {
 
     search_username(username: string) {
         let existing = this.jobs.find(_ => _.username === username)
-        let res = new Promise<T>(resolve => {
+        let res = new Promise<T>((resolve, reject) => {
             if (existing) {
 
                 existing.priority += 1000
                 existing.resolves.push(resolve)
+                existing.rejects.push(reject)
             } else {
                 this.jobs.push({
                     id: gen_id8(),
                     username,
                     since_ms: YesterdayMs(),
                     priority: 1000,
-                    resolves: [resolve]
+                    resolves: [resolve],
+                    rejects: [reject]
                 })
             }
         })
@@ -59,15 +62,23 @@ export class QPJ_Manager<T> {
         try {
 
             if (job) {
+                let startedAt = Date.now()
                 let res = await this.do_work(job.username, job.since_ms)
                 job.priority = 0
-                job.since_ms = Date.now()
+                job.since_ms = startedAt
+
                 job.resolves.forEach(_ => _(res))
                 job.resolves = []
+                job.rejects = []
             }
 
         } catch (error) {
             console.error("Sync failed:", error)
+            if (job) {
+                job.rejects.forEach(r => r(error))
+                job.rejects = []
+                job.resolves = []
+            }
         } finally {
 
             if (job) {
@@ -87,6 +98,12 @@ export class QPJ_Manager<T> {
 
     kick() {
         this.clearTimer()
+
+        if (!this.syncing) {
+            void this.run()
+            return
+        }
+
         this.should_sync_fast = true
 
         if (this.syncing) return
