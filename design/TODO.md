@@ -1,0 +1,7 @@
+- [ ] Footer
+- [ ] About Legal Github
+- [ ] Measure Coherence
+- [ ] Leaderboards
+- [ ] Book explorer
+- [ ] Netlify
+- [ ] Domain Publish
