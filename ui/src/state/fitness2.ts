@@ -1,4 +1,4 @@
-import { DivergedGame, FenStepLineInABook } from "./types.js"
+import type { DivergedGame, FenStepLineInABook } from "./shared_types"
 
 export type PerGameLineFitness = {
     match: DivergedGame
@@ -114,9 +114,11 @@ export type FitnessScore2 = {
     Nr: PerGameLineFitness[],
     Nc: PerGameLineFitness[],
     fitness_score: number
-    T_sums: number
-    T_total: number
     T_total_score: number
+    T_b: number
+    T_z: number
+    T_r: number
+    T_c: number
 }
 
 function Fitness(dd: PerGameLineFitness[], params: Overall_Params): FitnessScore2 {
@@ -138,11 +140,12 @@ function Fitness(dd: PerGameLineFitness[], params: Overall_Params): FitnessScore
     let Tr = Nr.map(_ => _.divergence_model!).filter(Boolean)
     let Tc = Nc.map(_ => _.divergence_model!).filter(Boolean)
 
-    let T_sums = 
-        params.Tb * F_t(Tb, params.Pb) +
-        params.Tz * F_t(Tz, params.Pz) +
-        params.Tr * F_t(Tr, params.Pr) +
-        params.Tc * F_t(Tc, params.Pc)
+    let T_b = params.Tb * F_t(Tb, params.Pb)
+    let T_z = params.Tz * F_t(Tz, params.Pz)
+    let T_r = params.Tr * F_t(Tr, params.Pr)
+    let T_c = params.Tc * F_t(Tc, params.Pc)
+
+    let T_sums = T_b + T_z + T_r + T_c
 
     let T_total = params.Tb + params.Tz + params.Tr + params.Tc
 
@@ -159,9 +162,11 @@ function Fitness(dd: PerGameLineFitness[], params: Overall_Params): FitnessScore
         Nr,
         Nc,
         fitness_score: Fitness,
-        T_sums,
-        T_total,
-        T_total_score
+        T_total_score,
+        T_b,
+        T_z,
+        T_r,
+        T_c
     }
 }
 

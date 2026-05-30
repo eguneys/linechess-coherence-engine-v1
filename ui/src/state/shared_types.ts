@@ -30,6 +30,7 @@ export type BookId = string
 export type Book = {
     id: BookId
     name: string
+    author: string
 }
 
 export type FenStepLineInABook = {
@@ -70,6 +71,7 @@ export type NormalizedGame = {
     you: string
     did_you_win: boolean
     did_you_draw: boolean
+    winner?: Color
 }
 
 export type Color = 'white' | 'black'

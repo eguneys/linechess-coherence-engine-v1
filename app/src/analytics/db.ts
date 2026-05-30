@@ -2,6 +2,7 @@ import { FitnessScore2 } from "./fitness2.js";
 import { Diverge, DivergedGame, FenStepLineInABook, LichessGameId, Line, NormalizedGame, SAN } from "./types.js";
 import { db } from '../db_init.js'
 import { gen_id8 } from "../controller.js";
+import { get_move_fens_for_san_moves } from "./chess.js";
 
 function find_diverge_for_game(game: NormalizedGame, line: FenStepLineInABook): Diverge {
 
@@ -18,7 +19,9 @@ function find_diverge_for_game(game: NormalizedGame, line: FenStepLineInABook): 
 
 export async function batched_find_diverge_for_moves(na: NormalizedGame[]): Promise<DivergedGame[]> {
 
-    const searchTerms = na.flatMap(_ => _.move_fens)//['apple', 'banana', 'cherry'];
+    let na_move_fens = na.map(_ => get_move_fens_for_san_moves(_.san_moves.split(' ')))
+
+    const searchTerms = na.flatMap((_, i) => na_move_fens[i])//['apple', 'banana', 'cherry'];
 
     const placeholders = searchTerms.map(term => `?`).join(',');
 
@@ -66,9 +69,11 @@ export async function batched_find_diverge_for_moves(na: NormalizedGame[]): Prom
 
         let most_matched_line: FenStepLineInABook | undefined = undefined
 
-        for (let r of results) {
-            for (let i = 0; i < game.move_fens.length; i++) {
-                if (game.move_fens[i] === r.fen_step.fen) {
+        for (let j = 0; j < results.length; j++) {
+            let r = results[j]
+            let move_fens = na_move_fens[j]
+            for (let i = 0; i < move_fens.length; i++) {
+                if (move_fens[i] === r.fen_step.fen) {
                     if (most_matched_line === undefined) {
                         most_matched_line = r
                     } else {

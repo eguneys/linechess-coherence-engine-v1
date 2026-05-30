@@ -14,7 +14,7 @@ export function init_analytics_routes(router: Router) {
 
         try {
             let result = await serve_username_query(query_username)
-            res.send({ result })
+            res.send({ ...result })
         } catch (error) {
             if (error instanceof ErrorFetchingUsername) {
                 res.status(404).send({ error: 'Username not found' })

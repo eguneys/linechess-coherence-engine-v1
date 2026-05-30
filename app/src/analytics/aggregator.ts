@@ -6,6 +6,27 @@ import { Default_O_params, FitnessFromRecentMatches } from "./fitness2.js"
 import { get_move_fens_for_san_moves } from "./chess.js"
 import { LRUCache } from "lru-cache"
 
+function make_memory_cache() {
+    let memory_cache = new LRUCache({
+        max: 500_000
+    })
+
+
+    async function get_processed_lichess_game_by_ids(ids: LichessGameId[]) {
+        return ids.filter(id => memory_cache.get(id))
+    }
+
+    async function save_processed_games_progress(ids: LichessGameId[]) {
+        for (let id of ids)
+            memory_cache.set(id, true)
+    }
+    return {
+        get_processed_lichess_game_by_ids,
+        save_processed_games_progress
+    }
+}
+const memory_cache = make_memory_cache()
+
 function map_lichess_export_game_to_normalized(username: string, game: exportGameResponse): NormalizedGame | undefined {
 
     if (game.variant !== 'standard') {
@@ -30,8 +51,6 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
     let did_you_win = game.winner === you
     let did_you_draw = game.status === 'draw'
 
-    let move_fens = get_move_fens_for_san_moves(game.moves.split(' '))
-
     return {
         id: gen_id8(),
         lichess_game_id: game.id,
@@ -42,10 +61,10 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
         black,
         speed: game.speed,
         san_moves: game.moves,
-        move_fens,
         you,
         did_you_win,
-        did_you_draw
+        did_you_draw,
+        winner: game.winner
     }
 }
 
@@ -112,11 +131,11 @@ function make_game_aggregator(username: string, since: number, games: Normalized
         games.splice(0, games.length - 500)
 
 
-        let existingIds = new Set(await db.get_processed_lichess_game_by_ids(games.map(_ => _.lichess_game_id)))
+        let existingIds = new Set(await memory_cache.get_processed_lichess_game_by_ids(games.map(_ => _.lichess_game_id)))
 
         const res: NormalizedGame[] = games.filter(game => !existingIds.has(game.lichess_game_id))
 
-        await db.save_processed_games_progress(res.map(_ => _.lichess_game_id))
+        await memory_cache.save_processed_games_progress(res.map(_ => _.lichess_game_id))
 
         let diverges = await db.batched_find_diverge_for_moves(res)
 

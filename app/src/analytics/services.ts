@@ -57,5 +57,10 @@ export async function serve_username_query(username_query: string) {
         throw new ErrorFetchingUsername(username_query)
     }
     
-    return await qpj_manager.search_username(username)
+    let games = await qpj_manager.search_username(username)
+
+    return {
+        username,
+        games
+    }
 }

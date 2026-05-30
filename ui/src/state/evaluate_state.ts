@@ -3,14 +3,13 @@ import type { DashboardState } from "./dashboard_state"
 import { create_evaluate_api } from "./evaluate_api"
 import { makePersisted } from "@solid-primitives/storage"
 import { createStore } from "solid-js/store"
-import { batch } from "solid-js"
-
-export type EvaluateUsername = {
-
-}
+import { batch, createMemo } from "solid-js"
+import { Default_O_params, FitnessFromRecentMatches, type FitnessScore2, type Overall_Params } from "./fitness2"
 
 export type EvaluateState = {
-    evaluate_username: EvaluateUsername | 'not-found' | undefined
+    fitnessScore: FitnessScore2 | undefined
+    user_not_found: boolean
+    username: string | undefined
 }
 
 export type EvaluateActions = {
@@ -21,17 +20,19 @@ export type EvaluateStore = [EvaluateState, EvaluateActions]
 
 export type PersistedState = {
     username: string
+    overall_params: Overall_Params
 }
 
 export function make_evaluate_store(_dashboard_state: DashboardState) {
 
     const [store, set_store] = makePersisted(createStore<PersistedState>({
-        username: ''
+        username: '',
+        overall_params: Default_O_params
     }))
 
     let api = create_evaluate_api()
 
-    let evaluate_username = createAsync(async () => {
+    let diverge_games = createAsync(async () => {
         if (store.username.length < 3) {
             return undefined
         }
@@ -39,19 +40,45 @@ export function make_evaluate_store(_dashboard_state: DashboardState) {
         let res = []
         try {
             res = await api.evaluate(store.username)
+            return res
         } catch (e) {
             return 'not-found'
         }
-        
+    })
 
-        await new Promise(resolve => setTimeout(resolve, 1000))
+    const fitness_score = () => {
 
-        return res
+        let res = diverge_games()
+
+        if (res === undefined || res === 'not-found') {
+            return undefined
+        }
+
+        return FitnessFromRecentMatches(res.games, store.overall_params)
+    }
+
+    const user_not_found = createMemo(() => diverge_games() === 'not-found')
+
+    const username = createMemo(() => {
+
+        let res = diverge_games()
+
+        if (res === undefined || res === 'not-found') {
+            return undefined
+        }
+
+        return res.username
     })
 
     let state = {
-        get evaluate_username() {
-            return evaluate_username()
+        get fitnessScore() {
+            return fitness_score()
+        },
+        get user_not_found() {
+            return user_not_found()
+        },
+        get username() {
+            return username()
         }
     }
 

@@ -2,11 +2,9 @@ import { BiRegularBrain } from "solid-icons/bi";
 import './Evaluator.scss'
 import { FiCompass, FiSearch } from "solid-icons/fi";
 import { BsQuestionSquare } from "solid-icons/bs";
-import { createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
+import { createMemo, createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
 import { A } from "@solidjs/router";
 import { useState } from "../state/State";
-import type { EvaluateAPIResult } from "../state/evaluate_api";
-import type { EvaluateUsername } from "../state/evaluate_state";
 
 export default function Evaluator() {
 
@@ -34,23 +32,17 @@ export default function Evaluator() {
             </div>
             <div class='results'>
                 <Suspense fallback={<Loading />}>
-                    <Switch fallback={
+                    <Show when={state.fitnessScore === undefined || state.user_not_found} fallback={
+                        <>
+                        <Assesment/>
                         <RecentMatches/>
+                        </>
                     }>
-                        <Match when={state.evaluate_username === 'not-found' || state.evaluate_username === undefined}>
-                            <NotFound />
-                        </Match>
-                    </Switch>
+                        <NotFound />
+                    </Show>
                 </Suspense>
             </div>
         </main>
-    </>)
-}
-
-function EvaluateRes(props: { res: EvaluateUsername | 'not-found'}) {
-
-    return (<>
-    
     </>)
 }
 
@@ -64,22 +56,48 @@ function NotFound() {
 
 function RecentMatches() {
 
+    const [{ evaluate_state: state}] = useState()
+
+
     return (<>
     <div class='recent-matches'>
         <div class='title'><FiCompass/>Played Recent Matches</div>
         <div class='list'>
-            <For each={'asd,'.repeat(30).split(',')}>{item => 
+            <For each={state.fitnessScore!.NAll}>{item => 
                <div class='item'>
-                   <div class='title'>The Berlin Wall <span class='time'>Blitz</span></div>
-                   <div class='pgn'>1.e4 e5 2. c4 c5</div>
-                   <p>
-                            <span class='line-name'>The French defense advanced variation</span> played in the book 
-                            <span class='book-name'>1.e4 White Repertoire for Grandmasters</span> 
-                            by <span class='author'>heroku</span></p>
+                        <div class='title'> 
+                            <Show when={item.match.diverge} fallback={<div class='unknown'>Unknown opening</div>}>{ diverge =>
+                                    <div class='playlist-name'>{diverge().most_matched_line.playlist.name}</div>
+                            }</Show>
+                            <span class='time'>{item.match.game.speed}</span>
+                        </div>
+                        <div class='vs'>
+                            <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A> vs 
+                            <A href={`https://lichess.org/@/${item.match.game.black}`}>{item.match.game.black}</A>
+                        </div>
+                        <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} /></div>
+                        <Show when={item.match.diverge} fallback={<p class='unknown'>Opening is not listed in our database.</p>}>{ diverge => 
+                            <p>
+                                <span class='line-name'>{diverge().most_matched_line.line.name}</span> played in the book
+                                <span class='book-name'>{diverge().most_matched_line.book.name}</span>
+                                by <span class='author'>{diverge().most_matched_line.book.author}</span>
+                            </p>
+                        }</Show>
                    <div class="footer">
-                    <span class='result'>heroku won</span>
+                            <span class='time'>
+                                <MomentsAgo timestamp={item.match.game.created_at}/>
+                            </span>
+                            <span class='result'>
+                                <Show when={item.match.game.winner} fallback={
+                                    <Show when={item.match.game.did_you_draw}>
+                                        Game drawn
+                                    </Show>
+                                }>{winner =>
+                                    <span class='won'>{winner() === 'white' ? item.match.game.white : item.match.game.black} won!</span>
+                                    }</Show>
+                            </span>
                     <div class='long'></div>
-                      <div class='score'>Score: 88/100</div>
+                            <div class='score'>Score: <Show when={item.Fitness_Score} fallback="---">{score => `${score()}/100`}</Show></div>
                    </div>
                </div>
             }</For>
@@ -89,18 +107,54 @@ function RecentMatches() {
 }
 
 
+function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number }) {
+    const well_put = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(0, props.diverge_at_ply) : [])
+    const diverged = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(props.diverge_at_ply) : props.played.split(' '))
+    const diverge_at_ply = createMemo(() => props.diverge_at_ply ?? 0)
+
+
+    return (<>
+        <For each={well_put()}>{(item, i) => 
+            <div class='move'>
+                <Show when={show_index_ply(i())}>{ply =>
+                    <span class='index'>{ply()}</span>
+                }</Show>
+                {item}
+            </div>
+        }</For>
+        <For each={diverged().slice(0, 10)}>{(item, i) => 
+            <div class='move'>
+                <Show when={show_index_ply(i() + diverge_at_ply())}>{ply =>
+                    <span class='index'>{ply()}</span>
+                }</Show>
+                {item}
+            </div>
+        }</For>
+        <Show when={diverged().length > 10}>
+            ...
+        </Show>
+    </>)
+}
+
+const show_index_ply = (i: number) => {
+    return i % 2 === 0 ? `${(i / 2) + 1}.`: undefined
+}
+
 function Assesment() {
+
+    const [{ evaluate_state: state}] = useState()
+
     return (<>
     
     <div class='assesment'>
-        <div class='ofs'><CircularProgress label="Opening Fitness Score" progress={30}/></div>
+        <div class='ofs'><CircularProgress label="Opening Fitness Score" progress={state.fitnessScore!.fitness_score * 100}/></div>
         <div class='right'>
-            <div class='title'>Profile Assesment: <A href="https://lichess.org/@/heroku" target="_blank">heroku</A></div>
+            <div class='title'>Profile Assesment: <A href={`https://lichess.org/@/${state.username}`} target="_blank">{state.username}</A></div>
             <div class='bars'>
-                <OneBarWithLabel label="bullet (10)" progress={30}/>
-                <OneBarWithLabel label="blitz (8)" progress={30}/>
-                <OneBarWithLabel label="rapid (10)" progress={30}/>
-                <OneBarWithLabel label="classical (2)" progress={30}/>
+                <OneBarWithLabel label="bullet (10)" progress={state.fitnessScore!.T_b}/>
+                <OneBarWithLabel label="blitz (8)" progress={state.fitnessScore!.T_z}/>
+                <OneBarWithLabel label="rapid (10)" progress={state.fitnessScore!.T_r}/>
+                <OneBarWithLabel label="classical (2)" progress={state.fitnessScore!.T_c}/>
             </div>
         </div>
     </div>
@@ -204,4 +258,58 @@ function HowItWorks() {
             </p>
         </div>
     </>)
+}
+
+
+
+export function format_fitness_score(value: number) {
+    value *= 100
+    return value ? `${value.toFixed(2)}%` : '--.--'
+}
+
+export function format_zero(value: number, repeat = 1) {
+    return value ? value : '-'.repeat(repeat)
+}
+
+export function MomentsAgo(props: { timestamp: number }) {
+
+    const [now, set_now] = createSignal(Date.now())
+
+    let interval_id = setInterval(() => set_now(Date.now()), 30 * 1000)
+
+    onCleanup(() => clearInterval(interval_id))
+
+    return <>
+        {formatMomentsAgo(now(), props.timestamp)}
+    </>
+}
+
+export function formatMomentsAgo(now: number, timestamp: number): string {
+    const seconds = Math.floor((now - timestamp) / 1000)
+
+    if (seconds < 1) return "just now"
+    if (seconds < 60) return `${seconds}s ago`
+
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+
+    const days = Math.floor(hours / 24)
+    if (days < 30) return `${days}d ago`
+
+    const months = Math.floor(days / 30)
+    if (months < 12) return `${months}mo ago`
+
+    const years = Math.floor(months / 12)
+    return `${years}y ago`
+}
+
+export const ply_to_dots = (ply: number) => {
+    return (ply % 2 === 0) ? `${Math.ceil((ply + 1) / 2)}.` : `${Math.ceil((ply + 1) / 2)}...`
+}
+
+export const pad_float = (value: number, pad: boolean) => {
+    return pad ? value.toFixed(1) : value
 }

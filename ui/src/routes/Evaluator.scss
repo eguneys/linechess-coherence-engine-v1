@@ -61,6 +61,11 @@ main.evaluator {
                 flex-flow: column;
                 @include variables.rounded-shadow;
 
+                cursor: pointer;
+                &:hover {
+                    background: variables.$grey-45;
+                }
+
                 .title {
 
                     font-size: variables.$m225;
@@ -83,6 +88,11 @@ main.evaluator {
                    }
                 }
 
+                .vs {
+                   @include variables.google-sans-flex(400);
+                   text-align: center;
+                }
+
                 p {
                     padding: variables.$s3 0;
                     display: flex;
@@ -102,11 +112,23 @@ main.evaluator {
                     border: variables.$px solid variables.$grey-3;
                     border-radius: variables.$s0;
                     padding: variables.$s2;
+
+                    .move {
+                        display: inline-block;
+                        padding-inline: variables.$s0;
+                    }
                 }
 
                 .footer {
                     display: flex;
                     align-items: flex-end;
+                    gap: variables.$s2;
+
+                    .time {
+                      @include variables.google-sans-flex(500);
+                      color: variables.$grey-1;
+                      font-size: variables.$m15;
+                    }
 
                     .long {
                         flex: 1;
@@ -367,6 +389,11 @@ main.evaluator {
                 @include variables.responsive-font(12, 25);
                @include variables.google-sans-flex(600);
                text-transform: uppercase;
+
+                a {
+                    text-transform: none;
+                    color: variables.$navy-1;
+                }
             }
         }
     }
