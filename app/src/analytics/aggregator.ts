@@ -75,12 +75,13 @@ export function make_game_aggregator_cache() {
         max: 500,
     })
 
-    function get_past_by_username(username: string) {
+    async function get_past_by_username(username: string, version: number) {
 
         let res = cache_by_username.get(username)
 
         if (!res) {
             res = {
+                version,
                 cached_since: 0,
                 games: [],
                 diverged: []
@@ -89,8 +90,15 @@ export function make_game_aggregator_cache() {
 
         cache_by_username.set(username, res)
 
+
+        let games = make_game_aggregator(username, res.cached_since, res.games)
+
+        if (version !== res.version) {
+            res.diverged = await games.repopulate_diverges_for_games(res.diverged)
+        }
+
         return {
-            games: make_game_aggregator(username, res.cached_since, res.games),
+            games,
             cached_since: res.cached_since,
             diverged: res.diverged.slice(0)
         }
@@ -107,12 +115,13 @@ export function make_game_aggregator_cache() {
 
     return {
         get_past_by_username,
-        update_cached_since
+        update_cached_since,
     }
 }
 
 export type Username = string
 export type AggregatorCacheItem = {
+    version: number
     games: NormalizedGame[]
     diverged: DivergedGame[]
     cached_since: number
@@ -146,8 +155,14 @@ function make_game_aggregator(username: string, since: number, games: Normalized
         return diverges
     }
 
+    async function repopulate_diverges_for_games(res: DivergedGame[]) {
+        let diverges = await db.batched_find_diverge_for_moves(res.map(_ => _.game))
+        return diverges
+    }
+
     return {
         add_game,
-        finish_games
+        finish_games,
+        repopulate_diverges_for_games
     }
 }

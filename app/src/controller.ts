@@ -8,7 +8,7 @@ import { DEV } from "./config.js";
 import { inc, metrics } from "./metrics.js";
 import { init_lichess_auth_routes } from "./lichess_oauth.js";
 import { get_existing_user_by_userId } from "./db_layer.js";
-import { init_sync_routes } from "./sync_routes.js";
+import { init_sync_routes } from "./sync/sync_routes.js";
 import { init_analytics_routes } from "./analytics/routes.js";
 
 

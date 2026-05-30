@@ -68,7 +68,7 @@ class SyncManager {
   }
 }
 
-export async function make_syncer(db_state: DatabaseState, db_actions: DatabaseActions, should_sync: () => boolean) {
+export async function make_syncer(db_state: DatabaseState, db_actions: DatabaseActions, should_sync: () => boolean, on_sync: () => void) {
 
   let syncer = new SyncManager(pushMutations, pullChanges, should_sync)
   let sync_api = create_sync_api()
@@ -76,29 +76,48 @@ export async function make_syncer(db_state: DatabaseState, db_actions: DatabaseA
   let sync_state = await db_state.get_sync_state()
 
   async function pushMutations() {
+
+    sync_state.last_sync_error = undefined
+
     sync_state.sync_in_progress = true
     await db_actions.set_sync_state(sync_state)
+    on_sync()
 
     let mutations = await db_state.get_pending_mutations()
 
-    await sync_api.push(mutations)
+    try {
+      if (mutations.length > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000)) // delay for visible syncing message
+        await sync_api.push(mutations)
+      }
+    } catch (e) {
+      console.error(e)
+      sync_state.last_sync_error = `${e}`
+    }
 
     await db_actions.delete_mutations(mutations.map(_ => _.id))
 
     sync_state.pending_writes = false
     await db_actions.set_sync_state(sync_state)
+    on_sync()
   }
 
   async function pullChanges() {
     let since = sync_state.last_pulled_at
-    let mutations = await sync_api.pull(since)
-    await db_actions.apply_mutations(mutations)
+
+    try {
+      let mutations = await sync_api.pull(since)
+      await db_actions.apply_mutations(mutations)
+    } catch (e) {
+      sync_state.last_sync_error = `${e}`
+    }
 
     sync_state.last_pulled_at = Date.now()
     sync_state.needs_pull = false
     sync_state.sync_in_progress = false
 
     db_actions.set_sync_state(sync_state)
+    on_sync()
   }
 
   return {

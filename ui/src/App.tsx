@@ -1,6 +1,6 @@
 import { A, Route, Router, useLocation } from '@solidjs/router'
 import './App.scss'
-import { createSelector, createSignal, type JSX, lazy, onCleanup, onMount, Show } from 'solid-js'
+import { createSelector, createSignal, type JSX, lazy, Match, onCleanup, onMount, Show, Switch } from 'solid-js'
 import { MdRoundAccount_box, MdSharpPower_settings_new, MdTwotoneVerified } from 'solid-icons/md'
 import { BiRegularBrain } from 'solid-icons/bi'
 import { HiOutlineBars3 } from 'solid-icons/hi'
@@ -71,9 +71,9 @@ const Layout = (props: { children?: JSX.Element }) => {
       </nav>
       <div class='long'></div>
       <div class='dash'>
-        <div class='status'>
+        <div class='sync-state'>
           <div class='label'>Active Curator</div>
-          <div class='value'>Synchronized</div>
+          <div class='value'><SyncState/></div>
         </div>
         <div class='profile'>
           <Show when={state.logged_in_profile} fallback={
@@ -95,6 +95,28 @@ const Layout = (props: { children?: JSX.Element }) => {
   </>)
 }
 
+function SyncState() {
+
+  let [{ linechess_state: state, dashboard_state }] = useState()
+
+  return (<>
+  
+  <Switch>
+    <Match when={dashboard_state.logged_in_profile === undefined}>
+        <span class='login'>Login to synchronize</span>
+    </Match>
+    <Match when={state.sync_state === 'error'}>
+      <span class='error'>Error while syncing..</span>
+    </Match>
+    <Match when={state.sync_state === 'in-progress'}>
+      <span class='in-progress'>Syncing..</span>
+    </Match>
+    <Match when={state.sync_state === 'synced'}>
+      <span class='success'>Synchronized</span>
+    </Match>
+  </Switch>
+  </>)
+}
 
 function App() {
 

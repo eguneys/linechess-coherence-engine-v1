@@ -70,7 +70,10 @@ export type MoveModel = {
     san: string
 }
 
+export type SyncState = 'error' | 'synced' | 'in-progress'
+
 export type Idb_Model_State = {
+    get_sync_state(): Promise<SyncState>
     get_books(): Promise<LightBookModel[]>
     get_book_by_id(id: BookId): Promise<BookModel | undefined>
     get_playlist_by_id(id: PlaylistId): Promise<PlaylistModel | undefined>
@@ -92,13 +95,28 @@ export type Idb_Model_Actions = {
 
 export type Idb_Store = [Idb_Model_State, Idb_Model_Actions]
 
-export async function make_idb_model(should_sync: Accessor<boolean>): Promise<Idb_Store> {
+export async function make_idb_model(should_sync: Accessor<boolean>, on_sync: () => void): Promise<Idb_Store> {
 
     let [db_state, db_actions] = await make_database()
 
-    let syncer = await make_syncer(db_state, db_actions, should_sync)
+    let syncer = await make_syncer(db_state, db_actions, should_sync, on_sync)
 
     let state: Idb_Model_State = {
+        async get_sync_state() {
+            let state = await db_state.get_sync_state()
+
+            if (state.last_sync_error) {
+                return 'error'
+            }
+            if (state.sync_in_progress) {
+                return 'in-progress'
+            }
+            if (state.pending_writes) {
+                return 'in-progress'
+            }
+
+            return 'synced'
+        },
         async get_books() {
             return (await db_state.get_books())
                 .sort((a, b) => b.created_at - a.created_at)

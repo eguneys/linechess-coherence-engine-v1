@@ -241,7 +241,7 @@ header {
         justify-content: flex-end;
         gap: variables.$s3;
 
-        .status {
+        .sync-state {
             display: flex;
             flex-flow: column;
             align-items: flex-end;
@@ -251,6 +251,15 @@ header {
                     color: variables.$grey-1;
                     text-transform: uppercase;
                     @include variables.looser;
+                }
+
+                .value {
+                    .error {
+                        color: variables.$red-1;
+                    }
+                    .success {
+                        color: variables.$green-3;
+                    }
                 }
 
             }

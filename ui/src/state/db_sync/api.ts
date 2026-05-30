@@ -20,12 +20,14 @@ export const $ = async (path: string, opts?: RequestInit) => {
     }
     
     if (!res.ok) {
-        const text = await res.text()
-        throw new Error(`API ${res.status}: ${text}`)
+        const error = await res.json()
+        throw new APIError(error.error)
     }
 
     return res.json()
 }
+
+export class APIError extends Error { }
 
 export async function $post(path: string, body: any = {}) {
     const res = await $(path, {

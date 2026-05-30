@@ -211,7 +211,7 @@ export async function make_database(): Promise<DatabaseStore> {
             book_edit_with_book(book_id, async book => ({
                 nb_playlists: book.nb_playlists + 1,
                 updated_at: created_at
-            }))
+            }), true)
 
             await db.put('pending_mutations', {
                 id: gen_id(),
@@ -233,7 +233,7 @@ export async function make_database(): Promise<DatabaseStore> {
             book_edit_with_book(playlist.book_id, async book => ({
                 nb_playlists: book.nb_playlists - 1,
                 updated_at: Date.now()
-            }))
+            }), true)
 
             await db.put('pending_mutations', {
                 id: gen_id(),
@@ -509,7 +509,7 @@ export async function make_database(): Promise<DatabaseStore> {
     }
 
 
-    async function book_edit_with_book(book_id: BookId, fn: (book: Book) => Promise<Partial<BookEdit> & { updated_at: number }>) {
+    async function book_edit_with_book(book_id: BookId, fn: (book: Book) => Promise<Partial<BookEdit> & { updated_at: number }>, push_mutations: boolean) {
         let book = await db.get('books', book_id)
         if (!book) {
             throw new BookNotFoundError(book_id)
@@ -526,6 +526,29 @@ export async function make_database(): Promise<DatabaseStore> {
             created_at: book.created_at,
             updated_at: edit.updated_at
         })
+
+        if (push_mutations) {
+            if (book.version !== edit.version) {
+                let full_edit = {
+                    id: book.id,
+                    name: edit.name ?? book.name,
+                    nb_playlists: edit.nb_playlists ?? book.nb_playlists,
+                    selected_playlist: edit.selected_playlist ?? book.selected_playlist,
+                    version: book.version + 1,
+                    has_pending_writes: false,
+                    created_at: book.created_at,
+                    updated_at: edit.updated_at
+                }
+                
+                await db.put('pending_mutations', {
+                    id: gen_id(),
+                    type: 'book.edit',
+                    payload: full_edit
+                })
+            }
+
+
+        }
     }
 
     async function playlist_edit_with_playlist(playlist_id: PlaylistId, fn: (playlist: Playlist) => Promise<Partial<PlaylistEdit> & { updated_at: number }>) {

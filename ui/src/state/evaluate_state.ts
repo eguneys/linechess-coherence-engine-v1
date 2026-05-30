@@ -5,10 +5,12 @@ import { makePersisted } from "@solid-primitives/storage"
 import { createStore } from "solid-js/store"
 import { batch, createMemo } from "solid-js"
 import { Default_O_params, FitnessFromRecentMatches, type FitnessScore2, type Overall_Params } from "./fitness2"
+import { APIError } from "./db_sync/api"
 
 export type EvaluateState = {
     fitnessScore: FitnessScore2 | undefined
     user_not_found: boolean
+    api_error: boolean
     username: string | undefined
 }
 
@@ -42,6 +44,9 @@ export function make_evaluate_store(_dashboard_state: DashboardState) {
             res = await api.evaluate(store.username)
             return res
         } catch (e) {
+            if (e instanceof APIError) {
+                return 'api-error'
+            }
             return 'not-found'
         }
     })
@@ -58,6 +63,7 @@ export function make_evaluate_store(_dashboard_state: DashboardState) {
     }
 
     const user_not_found = createMemo(() => diverge_games() === 'not-found')
+    const api_error = createMemo(() => diverge_games() === 'api-error')
 
     const username = createMemo(() => {
 
@@ -76,6 +82,9 @@ export function make_evaluate_store(_dashboard_state: DashboardState) {
         },
         get user_not_found() {
             return user_not_found()
+        },
+        get api_error() {
+            return api_error()
         },
         get username() {
             return username()

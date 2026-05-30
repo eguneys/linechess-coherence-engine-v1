@@ -3,6 +3,7 @@ import { Diverge, DivergedGame, FenStepLineInABook, LichessGameId, Line, Normali
 import { db } from '../db_init.js'
 import { gen_id8 } from "../controller.js";
 import { get_move_fens_for_san_moves } from "./chess.js";
+import { parse_mainline_from_pgn } from "../chess/chess_parser.js";
 
 function find_diverge_for_game(game: NormalizedGame, line: FenStepLineInABook): Diverge {
 
@@ -28,9 +29,9 @@ export async function batched_find_diverge_for_moves(na: NormalizedGame[]): Prom
     const query = db.prepare(`
   SELECT
      json_object('id', s.id, 'ply', s.ply, 'san', s.san, 'fen', s.fen) AS fen_step,
-     json_object('id', l.id, 'name', l.name, 'san_moves', l.san_moves) AS line,
+     json_object('id', l.id, 'name', l.name, 'pgn', l.pgn) AS line,
      json_object('id', p.id, 'name', p.name) AS playlist,
-     json_object('id', b.id, 'name', b.name) AS book
+     json_object('id', b.id, 'name', b.name, 'author', b.author) AS book
   FROM fen_steps s
   JOIN lines l ON s.line_id = l.id
   JOIN playlists p ON l.playlist_id = p.id
@@ -39,38 +40,42 @@ export async function batched_find_diverge_for_moves(na: NormalizedGame[]): Prom
 `);
 
     const results: FenStepLineInABook[] = query.all(searchTerms).map((_: any) => {
+        let fen_step = JSON.parse(_.fen_step)
+        let line = JSON.parse(_.line)
+        let playlist = JSON.parse(_.playlist)
+        let book = JSON.parse(_.book)
         return {
             fen_step: {
-                id: _.fen_step.id,
-                line_id: _.line.id,
-                ply: _.ply,
-                fen: _.fen,
-                san: _.san
+                id: fen_step.id,
+                line_id: line.id,
+                ply: fen_step.ply,
+                fen: fen_step.fen,
+                san: fen_step.san
             },
             playlist: {
-                id: _.playlist.id,
-                name: _.playlist.name,
-                book_id: _.book.id
+                id: playlist.id,
+                name: playlist.name,
+                book_id: book.id
             },
             book: {
-                id: _.book.id,
-                name: _.name.id
+                id: book.id,
+                name: book.name,
+                author: book.author
             },
             line: {
-                id: _.line.id,
-                playlist_id: _.playlist.id,
-                name: _.line.name,
-                san_moves: _.line.san_moves
+                id: line.id,
+                playlist_id: playlist.id,
+                name: line.name,
+                san_moves: parse_mainline_from_pgn(line.pgn).map(_ => _.san).join(' ')
             }
         }
     })
 
-    return na.map(game => {
+    return na.map((game, j) => {
 
         let most_matched_line: FenStepLineInABook | undefined = undefined
 
-        for (let j = 0; j < results.length; j++) {
-            let r = results[j]
+        for (let r of results) {
             let move_fens = na_move_fens[j]
             for (let i = 0; i < move_fens.length; i++) {
                 if (move_fens[i] === r.fen_step.fen) {

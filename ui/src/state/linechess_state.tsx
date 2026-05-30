@@ -1,7 +1,7 @@
 import { createStore } from "solid-js/store"
 import { makePersisted } from "@solid-primitives/storage"
 import type { BookId, LineId, PlaylistId } from "./types"
-import { make_idb_model, type BookModel, type LightBookModel, type LineModel, type PlaylistModel } from "./db_sync/idb_model"
+import { make_idb_model, type BookModel, type LightBookModel, type LineModel, type PlaylistModel, type SyncState } from "./db_sync/idb_model"
 import { createAsync } from "@solidjs/router"
 import { createMemo, createSignal } from "solid-js"
 import type { DashboardState } from "./dashboard_state"
@@ -30,6 +30,7 @@ export class NoPlaylistSelected extends Error {
 export type DashboardTab = 'dashboard' | 'repertoire'
 
 export type State = {
+    sync_state: SyncState | undefined
     is_create_new_playlist_modal_open: boolean
     is_create_new_book_modal_open: boolean
     is_create_new_line_modal_open: boolean
@@ -83,9 +84,10 @@ type LinechessPersistedStore = {
 export function make_linechess_store(dash_state: DashboardState): LinechessStore {
 
     const should_sync = createMemo(() => dash_state.logged_in_profile !== undefined)
+    const [fetch_sync_state, set_fetch_sync_state] = createSignal(false, { equals: false })
 
     const get_db = createAsync(async () => {
-        let db = await make_idb_model(should_sync)
+        let db = await make_idb_model(should_sync, () => set_fetch_sync_state(true))
 
         if (db) {
             db[1].sync()
@@ -161,7 +163,20 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
         return db.get_line_by_id(selected_line)
     })
 
+
+    const sync_state = createAsync(async () => {
+        fetch_sync_state()
+        let db = get_db()?.[0]
+        if (!db) {
+            return undefined
+        }
+        return await db.get_sync_state()
+    })
+
     let state = {
+        get sync_state() {
+            return sync_state()
+        },
         get books() {
             return books() ?? []
         },
@@ -222,6 +237,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
             let res = await db.add_book(name)
 
             set_fetch_books(true)
+            set_fetch_sync_state(true)
             return res
         },
         async edit_book(name: string) {
@@ -244,6 +260,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_book(true)
             set_fetch_books(true)
+            set_fetch_sync_state(true)
         },
         async delete_selected_book() {
             let db = get_db()?.[1]
@@ -261,6 +278,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_book(true)
             set_fetch_books(true)
+            set_fetch_sync_state(true)
         },
         select_book(id: BookId) {
             set_store('selected_book_id', id)
@@ -280,6 +298,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_book(true)
             set_fetch_books(true)
+            set_fetch_sync_state(true)
 
             return res
         },
@@ -301,6 +320,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
             })
 
             set_fetch_selected_book(true)
+            set_fetch_sync_state(true)
         },
         async delete_selected_playlist() {
             let db = get_db()?.[1]
@@ -318,6 +338,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_book(true)
             set_fetch_books(true)
+            set_fetch_sync_state(true)
         },
         async edit_playlist(name: string) {
 
@@ -339,6 +360,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_playlist(true)
             set_fetch_selected_book(true)
+            set_fetch_sync_state(true)
         },
         async edit_line(name?: string, pgn?: string) {
 
@@ -351,6 +373,10 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
                 throw new NoLineSelected()
             }
 
+            if (pgn === selected_line()?.pgn) {
+                pgn = undefined
+            }
+
             await db.edit_line({
                 id: line.id,
                 version: line.version + 1,
@@ -361,6 +387,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_playlist(true)
             set_fetch_selected_line(true)
+            set_fetch_sync_state(true)
         },
         async create_line(name: string, pgn: string) {
 
@@ -377,6 +404,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
 
             set_fetch_selected_playlist(true)
             set_fetch_selected_line(true)
+            set_fetch_sync_state(true)
 
             return res
         },
@@ -389,6 +417,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
             await db.delete_line(id)
 
             set_fetch_selected_playlist(true)
+            set_fetch_sync_state(true)
         },
         async select_line(selected_line: LineId) {
 
@@ -410,6 +439,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
             })
 
             set_fetch_selected_playlist(true)
+            set_fetch_sync_state(true)
         },
 
     }

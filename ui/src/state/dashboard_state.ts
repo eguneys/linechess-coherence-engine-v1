@@ -35,11 +35,14 @@ export function make_dashboard(): DashboardStore {
         let should_fetch = fetch_login()
         set_fetch_login(false)
 
-        if (should_fetch && !store.logged_in_profile) {
+        if (should_fetch) {
+            try {
             let res = await $api.fetch_lichess_username()
-
-            if (res.username) {
-                set_store('logged_in_profile', { username: res.username })
+                if (res.username) {
+                    set_store('logged_in_profile', { username: res.username })
+                }
+            } catch (e) {
+                set_store('logged_in_profile', undefined)
             }
         }
         return store.logged_in_profile

@@ -308,6 +308,20 @@ main.evaluator {
 
 }
 
+
+main.evaluator {
+    .results {
+        .not-found, .api-error {
+            display: flex;
+            justify-content: center;
+            padding: variables.$l0;
+            color: variables.$red-1;
+
+            @include variables.google-sans-flex(600);
+        }
+    }
+}
+
 main.evaluator {
     .results {
     .loading {

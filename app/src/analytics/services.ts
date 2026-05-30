@@ -4,6 +4,7 @@ import { create_lichess_agent } from "./fetch_lichess.js";
 import { QPJ_Manager } from "./job.js";
 import { YesterdayMs } from "./time.js";
 import { DivergedGame } from "./types.js";
+import { get_lines_db_version } from '../sync/db_layer.js'
 
 
 export class FetchGamesSinceError extends Error {}
@@ -17,7 +18,9 @@ let qpj_manager = new QPJ_Manager<DivergedGame>(async (username: string, since: 
 
     let since_until_yesterday = Math.max(since, YesterdayMs())
 
-    let { games, cached_since, diverged } = aggregator_cache.get_past_by_username(username)
+    let lines_db_version = await get_lines_db_version()
+
+    let { games, cached_since, diverged } = await aggregator_cache.get_past_by_username(username, lines_db_version)
 
     let missingDuration = Math.max(0, since_until_yesterday - cached_since)
 

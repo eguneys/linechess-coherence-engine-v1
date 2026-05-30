@@ -5,6 +5,7 @@ import { BsQuestionSquare } from "solid-icons/bs";
 import { createMemo, createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
 import { A } from "@solidjs/router";
 import { useState } from "../state/State";
+import type { LichessGameId } from "../state/shared_types";
 
 export default function Evaluator() {
 
@@ -32,17 +33,31 @@ export default function Evaluator() {
             </div>
             <div class='results'>
                 <Suspense fallback={<Loading />}>
-                    <Show when={state.fitnessScore === undefined || state.user_not_found} fallback={
+                    <Switch fallback={
                         <>
                         <Assesment/>
                         <RecentMatches/>
                         </>
                     }>
-                        <NotFound />
-                    </Show>
+                        <Match when={state.api_error} >
+                            <ApiError/>
+                        </Match>
+                        <Match when={state.fitnessScore === undefined || state.user_not_found} >
+                            <NotFound />
+                        </Match>
+                    </Switch>
                 </Suspense>
             </div>
         </main>
+    </>)
+}
+
+
+function ApiError() {
+    return (<>
+    <div class='api-error'>
+        Some server error while fetching games.
+    </div>
     </>)
 }
 
@@ -58,13 +73,16 @@ function RecentMatches() {
 
     const [{ evaluate_state: state}] = useState()
 
+    const on_open_lichess_game = (id: LichessGameId) => {
+        window.location.href = `https://lichess.org/${id}`
+    }
 
     return (<>
     <div class='recent-matches'>
         <div class='title'><FiCompass/>Played Recent Matches</div>
         <div class='list'>
             <For each={state.fitnessScore!.NAll}>{item => 
-               <div class='item'>
+               <div onClick={() => on_open_lichess_game(item.match.game.lichess_game_id)} class='item'>
                         <div class='title'> 
                             <Show when={item.match.diverge} fallback={<div class='unknown'>Unknown opening</div>}>{ diverge =>
                                     <div class='playlist-name'>{diverge().most_matched_line.playlist.name}</div>
@@ -78,7 +96,7 @@ function RecentMatches() {
                         <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} /></div>
                         <Show when={item.match.diverge} fallback={<p class='unknown'>Opening is not listed in our database.</p>}>{ diverge => 
                             <p>
-                                <span class='line-name'>{diverge().most_matched_line.line.name}</span> played in the book
+                                <span class='line-name'>{diverge().most_matched_line.line.name}</span> line played from the book
                                 <span class='book-name'>{diverge().most_matched_line.book.name}</span>
                                 by <span class='author'>{diverge().most_matched_line.book.author}</span>
                             </p>
@@ -97,7 +115,7 @@ function RecentMatches() {
                                     }</Show>
                             </span>
                     <div class='long'></div>
-                            <div class='score'>Score: <Show when={item.Fitness_Score} fallback="---">{score => `${score()}/100`}</Show></div>
+                            <div class='score'>Score: <Show when={item.Fitness_Score} fallback="---">{score => `${Math.round(score() * 100)}/100`}</Show></div>
                    </div>
                </div>
             }</For>
