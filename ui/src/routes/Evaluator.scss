@@ -116,7 +116,12 @@ main.evaluator {
                     .move {
                         display: inline-block;
                         padding-inline: variables.$s0;
+
+                        &.well {
+                            background: variables.$navy-4;
+                        }
                     }
+
                 }
 
                 .footer {

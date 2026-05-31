@@ -33,12 +33,12 @@ body {
 
 
 a {
-    color: variables.$navy15;
+    color: variables.$navy-1;
     text-decoration: none;
 
 
     &:visited {
-        color: variables.$navy2;
+        color: variables.$navy0;
     }
     &.out {
         font-weight: bold;

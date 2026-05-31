@@ -134,7 +134,7 @@ function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number }) 
 
     return (<>
         <For each={well_put()}>{(item, i) => 
-            <div class='move'>
+            <div class='move well'>
                 <Show when={show_index_ply(i())}>{ply =>
                     <span class='index'>{ply()}</span>
                 }</Show>
