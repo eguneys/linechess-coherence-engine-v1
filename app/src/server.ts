@@ -17,7 +17,12 @@ import session from 'express-session'
 let app = express()
 
 let origin = true//DEV ? `http://${WEB_DOMAIN}`: `https://${WEB_DOMAIN}`
-app.use(cors({ credentials: true, origin, optionsSuccessStatus: 200 }));
+app.use(cors({ 
+  credentials: true, 
+  origin, 
+  optionsSuccessStatus: 200,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(express.json())
 app.use(bodyParser.json());
 
@@ -44,6 +49,7 @@ init_db().then(async (db) => {
       secure: !DEV,
       sameSite: DEV ? 'lax' : 'none',
       maxAge: 80 * 24 * 60 * 60 * 1000, // 80 days
+      domain: DEV ? undefined : `.linechess.com`,
     }
   }))
 
