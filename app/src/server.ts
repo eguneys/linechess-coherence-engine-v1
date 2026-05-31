@@ -95,7 +95,7 @@ init_db().then(async (db) => {
       log('error', err.message)
       return
     }
-    log('info', `LineChess API running on ${PORT}`)
+    log('info', `LineChess API running on ${PORT} in ${DEV} mode`)
   })
 
 })
