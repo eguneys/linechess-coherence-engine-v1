@@ -1,0 +1,27 @@
+[Unit]
+Description=LineChess Coherence Engine API
+After=network.target
+
+[Service]
+Type=simple
+User=linechess
+WorkingDirectory=/var/www/linechess-api
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=5
+
+# Safety
+Environment=NODE_ENV=production
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits
+LimitNOFILE=4096
+MemoryMax=512M
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
