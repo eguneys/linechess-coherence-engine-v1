@@ -16,11 +16,13 @@ import session from 'express-session'
 
 let app = express()
 
+let origin = true//DEV ? `http://${WEB_DOMAIN}`: `https://${WEB_DOMAIN}`
+app.use(cors({ credentials: true, origin, optionsSuccessStatus: 200 }));
 app.use(express.json())
 app.use(bodyParser.json());
-app.use(cors({ credentials: true, origin: `https://${WEB_DOMAIN}` }));
 
 app.set('trust proxy', 'loopback')
+//app.set('trust proxy', 1)
 
 
 import { PORT as CONFIG_PORT } from './config.js'
@@ -41,7 +43,7 @@ init_db().then(async (db) => {
     cookie: {
       secure: !DEV,
       sameSite: DEV ? 'lax' : 'none',
-      maxAge: 80 * 24 * 60 * 60 * 1000 // 80 days
+      maxAge: 80 * 24 * 60 * 60 * 1000, // 80 days
     }
   }))
 
