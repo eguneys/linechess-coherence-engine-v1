@@ -8,7 +8,7 @@ import bodyParser from "body-parser";
 import { runMigrations } from "./migrations.js";
 import cors from 'cors'
 
-import { SECRET } from './config.js'
+import { DEV, SECRET } from './config.js'
 
 // @ts-ignore
 import store from 'better-express-store'
@@ -37,7 +37,12 @@ init_db().then(async (db) => {
     store: store2,
     secret: SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+      secure: !DEV,
+      sameSite: DEV ? 'lax' : 'none',
+      maxAge: 80 * 24 * 60 * 60 * 1000 // 80 days
+    }
   }))
 
   app.use((req, _, next) => {
