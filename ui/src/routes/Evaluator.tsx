@@ -47,6 +47,7 @@ export default function Evaluator() {
                         </Match>
                     </Switch>
                 </Suspense>
+                <HowItWorks/>
             </div>
         </main>
     </>)
@@ -249,7 +250,6 @@ function SpinnerDots() {
     </>)
 }
 
-// @ts-ignore
 function HowItWorks() {
     return (<>
         <div class='how'>

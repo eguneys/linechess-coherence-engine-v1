@@ -1,0 +1,36 @@
+@use '../variables';
+
+main {
+    .box {
+       @include variables.rounded-shadow;
+        padding: variables.$s2;
+        margin-top: variables.$s2;
+
+        .header {
+
+            font-size: variables.$m25;
+            @include variables.google-sans-flex(600);
+            border-bottom: variables.$s0 solid variables.$green-2;
+            margin-bottom: variables.$m2;
+        }
+
+        .body {
+            display: flex;
+            flex-flow: column;
+            gap: variables.$s2;
+            h2 {
+            @include variables.google-sans-flex(500);
+
+            }
+
+            .last-updated {
+               @include variables.google-sans-flex(600);
+            }
+
+            p {
+                text-indent: variables.$s2;
+               @include variables.google-sans-flex(300);
+            }
+        }
+    }
+}

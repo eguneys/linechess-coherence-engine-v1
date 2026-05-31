@@ -71,7 +71,7 @@ main.composition {
 
     .books, .playlists {
 
-        @include variables.rounded-md;
+        @include variables.rounded;
         padding: variables.$s0;
         background: variables.$grey-1;
 
@@ -238,7 +238,7 @@ main.composition {
 
     .lines {
 
-        @include variables.rounded-md;
+        @include variables.rounded;
         padding: variables.$s0;
         background: variables.$grey-1;
 

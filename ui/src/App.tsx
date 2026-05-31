@@ -8,6 +8,9 @@ import { LinechessProvider, useState } from './state/State'
 
 const Main = lazy(() => import('./routes/Main'))
 const Evaluator = lazy(() => import('./routes/Evaluator'))
+const About = lazy(() => import('./routes/About'))
+const Legal = lazy(() => import('./routes/Legal'))
+const NotFound = lazy(() => import('./routes/NotFound'))
 
 const Layout = (props: { children?: JSX.Element }) => {
 
@@ -91,7 +94,19 @@ const Layout = (props: { children?: JSX.Element }) => {
     <div class='main-wrapper'>
       {props.children}
     </div>
-    <footer></footer>
+    <Footer/>
+  </>)
+}
+
+function Footer() {
+  return (<>
+    <footer>
+      <A href='/about'>About</A>
+      <span>·</span>
+      <A href='/legal'>Legal</A>
+      <span>·</span>
+      <A class='out' href='https://github.com/eguneys/linechess-coherence-engine-v1'>Github</A>
+    </footer>
   </>)
 }
 
@@ -125,6 +140,9 @@ function App() {
       <Router root={Layout}>
         <Route path='/' component={Main} />
         <Route path='/evaluator' component={Evaluator} />
+        <Route path='/about' component={About}/>
+        <Route path='/legal' component={Legal}/>
+        <Route path='*404' component={NotFound}/>
       </Router>
     </LinechessProvider>
   </>)

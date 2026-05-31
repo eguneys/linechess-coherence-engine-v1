@@ -125,7 +125,6 @@ export default function Main() {
         <Show when={state.is_edit_book_modal_open}>
             <EditBookDialog />
         </Show>
-        <img alt="" src="/screen1.png"/>
     </main>
     </>)
 }

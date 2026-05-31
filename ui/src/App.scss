@@ -481,3 +481,14 @@ main {
             box-shadow: 0 0 0 3px variables.$navy0;
         }
 }
+
+
+footer {
+    @include variables.google-sans-flex(400);
+    display: flex;
+    justify-content: center;
+    gap: variables.$m1;
+    padding: variables.$l0;
+    color: variables.$black4;
+    border-top: variables.$px solid variables.$black1;
+}
