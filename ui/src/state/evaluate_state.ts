@@ -25,7 +25,7 @@ export type PersistedState = {
     overall_params: Overall_Params
 }
 
-export function make_evaluate_store(_dashboard_state: DashboardState) {
+export function make_evaluate_store(_dashboard_state: DashboardState): EvaluateStore {
 
     const [store, set_store] = makePersisted(createStore<PersistedState>({
         username: '',
