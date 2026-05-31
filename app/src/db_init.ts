@@ -7,5 +7,6 @@ export async function init_db() {
     db = sqlite3('data/linechess.db', {})
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
+
     return db
 }

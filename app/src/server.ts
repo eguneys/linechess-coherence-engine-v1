@@ -10,6 +10,8 @@ import cors from 'cors'
 
 import { SECRET } from './config.js'
 
+// @ts-ignore
+import store from 'better-express-store'
 import session from 'express-session'
 
 let app = express()
@@ -21,58 +23,65 @@ app.use(cors({ credentials: true, origin: true }));
 app.set('trust proxy', 'loopback')
 
 
-app.use(session({
-  secret: SECRET,
-  resave: false,
-  saveUninitialized: false
-}))
-
-app.use((req, _, next) => {
-  inc(metrics.requests, req.path)
-  next()
-})
-
-app.get('/health', (_, res) => {
-  res.send({ ok: true })
-})
-
-app.get('/metrics', (req, res) => {
-  res.send({
-    requests: Object.fromEntries(metrics.requests),
-    errors: Object.fromEntries(metrics.errors),
-    scores: Object.fromEntries(metrics.scores)
-  })
-})
-
-app.use(router)
-
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  
-    if (err instanceof RateLimitError)
-        return res.status(429).send({ error: 'Too many requests' })
-
-  log('error', 'unhandled_error', {
-    path: req.path,
-    method: req.method,
-    message: err.message
-  })
-
-
-
-  res.status(500).send({
-    error: 'Internal server error'
-  })
-})
-
-app.use((req, res) => {
-  res.status(404).send({error: "Not found"});
-});
-
-
 import { PORT as CONFIG_PORT } from './config.js'
+
+
 
 init_db().then(async (db) => {
   await runMigrations(db)
+
+
+  let store2 = store({ dbPath: 'data/sessions.db'})
+
+  app.use(session({
+    store: store2,
+    secret: SECRET,
+    resave: false,
+    saveUninitialized: false
+  }))
+
+  app.use((req, _, next) => {
+    inc(metrics.requests, req.path)
+    next()
+  })
+
+  app.get('/health', (_, res) => {
+    res.send({ ok: true })
+  })
+
+  app.get('/metrics', (req, res) => {
+    res.send({
+      requests: Object.fromEntries(metrics.requests),
+      errors: Object.fromEntries(metrics.errors),
+      scores: Object.fromEntries(metrics.scores)
+    })
+  })
+
+  app.use(router)
+
+  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+
+    if (err instanceof RateLimitError)
+      return res.status(429).send({ error: 'Too many requests' })
+
+    log('error', 'unhandled_error', {
+      path: req.path,
+      method: req.method,
+      message: err.message
+    })
+
+
+
+    res.status(500).send({
+      error: 'Internal server error'
+    })
+  })
+
+  app.use((req, res) => {
+    res.status(404).send({ error: "Not found" });
+  });
+
+
 
   const PORT = process.env.PORT || CONFIG_PORT || 3300
 
