@@ -51,6 +51,7 @@ async function apply_book_create(book: BookAdd, author: User) {
     await db.put_books({
         id: book.id,
         name: book.name,
+        author: author.username,
         nb_playlists: 0,
         version: 1,
         created_at: book.created_at,
