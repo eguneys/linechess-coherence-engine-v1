@@ -63,7 +63,7 @@ export type DatabaseState = {
 }
 
 export type DatabaseActions = {
-    create_book(name: string): Promise<BookId>
+    create_book(name: string, author: string): Promise<BookId>
     edit_book(book: BookEdit): Promise<void>
     delete_book(id: BookId): Promise<void>
     create_playlist(book_id: BookId, name: string): Promise<PlaylistId>
@@ -136,11 +136,12 @@ export async function make_database(): Promise<DatabaseStore> {
     }
 
     let actions = {
-        async create_book(name: string) {
+        async create_book(name: string, author: string) {
             let created_at = Date.now()
             let value: Book = {
                 id: gen_id(),
                 name,
+                author,
                 nb_playlists: 0,
                 version: 1,
                 has_pending_writes: true,
@@ -176,6 +177,7 @@ export async function make_database(): Promise<DatabaseStore> {
             }
             await db.put('books', {
                 id: book.id,
+                author: book.author,
                 name: edit.name ?? book.name,
                 nb_playlists: edit.nb_playlists ?? book.nb_playlists,
                 selected_playlist: edit.selected_playlist ?? book.selected_playlist,
@@ -410,6 +412,7 @@ export async function make_database(): Promise<DatabaseStore> {
         await db.put('books', {
             id: book.id,
             name: book.name,
+            author: book.author,
             nb_playlists: 0,
             version: 1,
             created_at: book.created_at,
@@ -465,6 +468,7 @@ export async function make_database(): Promise<DatabaseStore> {
         }
         await db.put('books', {
             id: book.id,
+            author: book.author,
             name: edit.name ?? book.name,
             nb_playlists: edit.nb_playlists ?? book.nb_playlists,
             selected_playlist: edit.selected_playlist ?? book.selected_playlist,
@@ -518,6 +522,7 @@ export async function make_database(): Promise<DatabaseStore> {
         let edit = await fn(book)
         await db.put('books', {
             id: book.id,
+            author: book.author,
             name: edit.name ?? book.name,
             nb_playlists: edit.nb_playlists ?? book.nb_playlists,
             selected_playlist: edit.selected_playlist ?? book.selected_playlist,

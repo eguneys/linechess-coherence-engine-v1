@@ -9,12 +9,14 @@ export type LightBookModel = {
     id: BookId
     name: string
     nb_playlists: number
+    author: string
 }
 
 export type BookModel = {
     id: BookId
     version: number
     name: string
+    author: string
     playlists: LightPlaylistModel[]
     selected_playlist?: PlaylistId
 }
@@ -82,7 +84,7 @@ export type Idb_Model_State = {
 
 export type Idb_Model_Actions = {
     sync(): void
-    add_book(name: string): Promise<BookId>
+    add_book(name: string, author: string): Promise<BookId>
     delete_book(id: BookId): Promise<void>
     edit_book(edit: BookEdit): Promise<void>
     add_playlist(id: BookId, name: string): Promise<PlaylistId>
@@ -133,6 +135,7 @@ export async function make_idb_model(should_sync: Accessor<boolean>, on_sync: ()
             let res: BookModel = {
                 id: book.id,
                 name: book.name,
+                author: book.author,
                 selected_playlist: book.selected_playlist,
                 version: book.version,
                 playlists: playlists.map(_ => _)
@@ -185,8 +188,8 @@ export async function make_idb_model(should_sync: Accessor<boolean>, on_sync: ()
         sync() {
             syncer.kick()
         },
-        async add_book(name: string) {
-            let res = await db_actions.create_book(name)
+        async add_book(name: string, author: string) {
+            let res = await db_actions.create_book(name, author)
 
             syncer.kick()
             return res

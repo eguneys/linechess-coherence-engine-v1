@@ -40,6 +40,7 @@ export type SyncState = {
 export type BookAdd = {
     id: BookId
     name: string
+    author: string
     created_at: Timestamp
     updated_at: Timestamp
 }
@@ -98,6 +99,7 @@ export type BookId = string
 export type Book = {
     id: BookId
     name: string
+    author: string
     nb_playlists: number
     selected_playlist?: PlaylistId
     created_at: Timestamp

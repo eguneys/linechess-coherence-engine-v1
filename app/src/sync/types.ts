@@ -100,6 +100,7 @@ export type BookId = string
 export type Book = {
     id: BookId
     name: string
+    author: string
     nb_playlists: number
     selected_playlist?: PlaylistId
     created_at: Timestamp

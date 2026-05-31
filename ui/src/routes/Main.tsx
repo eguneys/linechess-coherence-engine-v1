@@ -42,14 +42,12 @@ export default function Main() {
                     <div class='list'>
                         <For each={state.books}>{ book =>
                             <div onClick={() => select_book(book.id)} class='book' classList={{ active: is_selected_book(book.id) }}>
-                              <div class='info'>
                                 <div class='title'>{book.name}</div>
                                 <span class='nb-playlists'>{book.nb_playlists} Playlists</span>
-                              </div>
-                              <div class='long'></div>
-                              <div class='actions'>
-                                <button onClick={() => set_open_edit_book(true)} title="Edit"><TbOutlinePencilMinus /></button>
-                              </div>
+                                <span class='author'>by {book.author}</span>
+                                <div class='actions'>
+                                   <button onClick={() => set_open_edit_book(true)} title="Edit"><TbOutlinePencilMinus /></button>
+                                </div>
                             </div>
                         }</For>
                     </div>

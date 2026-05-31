@@ -161,9 +161,37 @@ main.composition {
                    background: variables.$navy1;
                 }
 
+                display: grid;
+
+                grid-template-areas: 'title title title actions'
+                                     'playlists . author .';
+                
+                grid-template-columns: auto auto auto variables.$l05;
+
+                .title {
+                    grid-area: title;
+                }
+
+                .nb-playlists {
+                    grid-area: playlists;
+                }
+
+                .actions { 
+                    grid-area: actions;
+                }
+
+                .author {
+                    grid-area: author;
+                }
+
                 .nb-playlists {
                     font-size: variables.$s3;
-                   color: variables.$grey1;
+                    color: variables.$grey1;
+                    align-self: flex-end;
+                } 
+
+                .author {
+                    color: variables.$grey-3;
                 }
             }
         }

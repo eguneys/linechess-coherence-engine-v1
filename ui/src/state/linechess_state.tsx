@@ -234,7 +234,7 @@ export function make_linechess_store(dash_state: DashboardState): LinechessStore
             if (!db) {
                 return undefined
             }
-            let res = await db.add_book(name)
+            let res = await db.add_book(name, dash_state.logged_in_profile?.username ?? 'me');
 
             set_fetch_books(true)
             set_fetch_sync_state(true)
