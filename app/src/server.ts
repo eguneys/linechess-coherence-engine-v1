@@ -8,7 +8,7 @@ import bodyParser from "body-parser";
 import { runMigrations } from "./migrations.js";
 import cors from 'cors'
 
-import { DEV, SECRET } from './config.js'
+import { DEV, SECRET, WEB_DOMAIN } from './config.js'
 
 // @ts-ignore
 import store from 'better-express-store'
@@ -18,7 +18,7 @@ let app = express()
 
 app.use(express.json())
 app.use(bodyParser.json());
-app.use(cors({ credentials: true, origin: true }));
+app.use(cors({ credentials: true, origin: `https://${WEB_DOMAIN}` }));
 
 app.set('trust proxy', 'loopback')
 
@@ -95,7 +95,7 @@ init_db().then(async (db) => {
       log('error', err.message)
       return
     }
-    log('info', `LineChess API running on ${PORT} in ${DEV} mode`)
+    log('info', `LineChess API running on ${PORT} in ${DEV?'dev':'production'} mode at ${WEB_DOMAIN}`)
   })
 
 })
