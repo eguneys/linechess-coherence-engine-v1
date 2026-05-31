@@ -21,8 +21,8 @@ app.use(cors({ credentials: true, origin, optionsSuccessStatus: 200 }));
 app.use(express.json())
 app.use(bodyParser.json());
 
-app.set('trust proxy', 'loopback')
-//app.set('trust proxy', 1)
+//app.set('trust proxy', 'loopback')
+app.set('trust proxy', 1)
 
 
 import { PORT as CONFIG_PORT } from './config.js'
