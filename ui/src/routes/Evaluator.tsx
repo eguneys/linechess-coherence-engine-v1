@@ -5,7 +5,7 @@ import { BsQuestionSquare, BsSliders2 } from "solid-icons/bs";
 import { createEffect, createMemo, createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
 import { A } from "@solidjs/router";
 import { useState } from "../state/State";
-import type { AllowedSpeed, LichessGameId } from "../state/shared_types";
+import type { AllowedSpeed, DivergedGame, LichessGameId } from "../state/shared_types";
 import type { TT_Params } from "../state/fitness2";
 
 export default function Evaluator() {
@@ -83,6 +83,23 @@ function RecentMatches() {
         return state.fitnessScore!.NAll.sort((a, b) => b.match.game.created_at - a.match.game.created_at)
     })
 
+    const item_who_diverged = (item: DivergedGame) => {
+
+        if (item.game.you === 'white') {
+            if (item.diverge!.did_you_diverge) {
+                return item.game.white
+            } else {
+                return item.game.black
+            }
+        } else {
+            if (item.diverge?.did_you_diverge) {
+                return item.game.black
+            } else {
+                return item.game.white
+            }
+        }
+    }
+
     return (<>
     <div class='recent-matches'>
         <div class='title'><FiCompass/>Played Recent Matches</div>
@@ -99,7 +116,8 @@ function RecentMatches() {
                             <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A> vs 
                             <A href={`https://lichess.org/@/${item.match.game.black}`}>{item.match.game.black}</A>
                         </div>
-                        <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} /></div>
+                        <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} line={item.match.diverge?.most_matched_line.line.san_moves} /></div>
+                        <div class='long'></div>
                         <Show when={item.match.diverge} fallback={<p class='unknown'>Opening is not listed in our database.</p>}>{ diverge => 
                             <p>
                                 <span class='line-name'>{diverge().most_matched_line.line.name}</span> line played from the book
@@ -119,6 +137,9 @@ function RecentMatches() {
                                 }>{winner =>
                                     <span class='won'>{winner() === 'white' ? item.match.game.white : item.match.game.black} won!</span>
                                     }</Show>
+                                <Show when={item.match.diverge}>{
+                                    <span class='diverged'>{item_who_diverged(item.match)} diverged</span>
+                                }</Show>
                             </span>
                     <div class='long'></div>
                             <div class='score'>Score: <Show when={item.Fitness_Score} fallback="---">{score => `${Math.round(score() * 100)}/100`}</Show></div>
@@ -131,32 +152,53 @@ function RecentMatches() {
 }
 
 
-function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number }) {
+function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number, line?: string }) {
     const well_put = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(0, props.diverge_at_ply) : [])
     const diverged = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(props.diverge_at_ply) : props.played.split(' '))
     const diverge_at_ply = createMemo(() => props.diverge_at_ply ? props.diverge_at_ply : 0)
+    const continues = createMemo(() => props.line ? props.line.split(' ').slice(props.diverge_at_ply!): [])
 
 
     return (<>
-        <For each={well_put()}>{(item, i) => 
-            <div class='move well'>
-                <Show when={show_index_ply(i())}>{ply =>
-                    <span class='index'>{ply()}</span>
-                }</Show>
-                {item}
-            </div>
-        }</For>
-        <For each={diverged().slice(0, 10)}>{(item, i) => 
-            <div class='move'>
-                <Show when={show_index_ply(i() + diverge_at_ply())}>{ply =>
-                    <span class='index'>{ply()}</span>
-                }</Show>
-                {item}
-            </div>
-        }</For>
-        <Show when={diverged().length > 10}>
-            ...
-        </Show>
+        <div class='played' classList={{hidable: continues().length > 0}}>
+            <For each={well_put()}>{(item, i) =>
+                <div class='move well'>
+                    <Show when={show_index_ply(i())}>{ply =>
+                        <span class='index'>{ply()}</span>
+                    }</Show>
+                    {item}
+                </div>
+            }</For>
+            <For each={diverged().slice(0, 10)}>{(item, i) =>
+                <div class='move'>
+                    <Show when={show_index_ply(i() + diverge_at_ply())}>{ply =>
+                        <span class='index'>{ply()}</span>
+                    }</Show>
+                    {item}
+                </div>
+            }</For>
+            <Show when={diverged().length > 10}>
+                ...
+            </Show>
+        </div>
+        <div class='line'>
+            <For each={well_put()}>{(item, i) =>
+                <div class='move well'>
+                    <Show when={show_index_ply(i())}>{ply =>
+                        <span class='index'>{ply()}</span>
+                    }</Show>
+                    {item}
+                </div>
+            }</For>
+            <For each={continues()}>{(item, i) =>
+                <div class='move'>
+                    <Show when={show_index_ply(i() + diverge_at_ply())}>{ply =>
+                        <span class='index'>{ply()}</span>
+                    }</Show>
+                    {item}
+                </div>
+            }</For>
+        </div>
     </>)
 }
 

@@ -107,11 +107,30 @@ main.evaluator {
                    }
                 }
 
+                .long {
+                    flex: 1;
+                }
+
                 .pgn {
                     @include variables.aldrich;
                     border: variables.$px solid variables.$grey-3;
                     border-radius: variables.$s0;
                     padding: variables.$s2;
+                    display: flex;
+
+                    .line {
+                        display: none;
+                        background: variables.$white3;
+                    }
+
+                    &:hover {
+                        .played.hidable {
+                            display: none;
+                        }
+                        .line {
+                            display: block;
+                        }
+                    }
 
                     .move {
                         display: inline-block;
@@ -150,6 +169,8 @@ main.evaluator {
                         color: variables.$grey-1;
                         text-transform: uppercase;
                         font-size: variables.$m15;
+                        display: flex;
+                        gap: variables.$s2;
                     }
                 }
             }
