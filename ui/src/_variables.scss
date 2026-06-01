@@ -69,6 +69,8 @@ $grey-45: color.adjust($grey0, $lightness: 45%);
 $grey-5: color.adjust($grey0, $lightness: 50%);
 $grey1: color.adjust($grey0, $lightness: -10%);
 $grey2: color.adjust($grey0, $lightness: -20%);
+$grey3: color.adjust($grey0, $lightness: -30%);
+$grey4: color.adjust($grey0, $lightness: -40%);
 
 $navy0: color.adjust(color.mix(navy, cyan, 87%), $saturation: -30%);
 $navy-6: color.adjust($navy0, $lightness: 45%, $hue: -10deg, $saturation: 100%);

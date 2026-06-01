@@ -1,11 +1,12 @@
 import { BiRegularBrain } from "solid-icons/bi";
 import './Evaluator.scss'
 import { FiCompass, FiSearch } from "solid-icons/fi";
-import { BsQuestionSquare } from "solid-icons/bs";
-import { createMemo, createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
+import { BsQuestionSquare, BsSliders2 } from "solid-icons/bs";
+import { createEffect, createMemo, createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
 import { A } from "@solidjs/router";
 import { useState } from "../state/State";
-import type { LichessGameId } from "../state/shared_types";
+import type { AllowedSpeed, LichessGameId } from "../state/shared_types";
+import type { TT_Params } from "../state/fitness2";
 
 export default function Evaluator() {
 
@@ -169,19 +170,177 @@ function Assesment() {
 
     return (<>
     
-    <div class='assesment'>
+    <div class='assesment-with-config'>
+        <SliderParameters/>
+        <div class='assesment'>
         <div class='ofs'><CircularProgress label="Opening Fitness Score" progress={state.fitnessScore!.fitness_score * 100}/></div>
         <div class='right'>
             <div class='title'>Profile Assesment: <A href={`https://lichess.org/@/${state.username}`} target="_blank">{state.username}</A></div>
             <div class='bars'>
-                <OneBarWithLabel label="bullet (10)" progress={state.fitnessScore!.T_b}/>
-                <OneBarWithLabel label="blitz (8)" progress={state.fitnessScore!.T_z}/>
-                <OneBarWithLabel label="rapid (10)" progress={state.fitnessScore!.T_r}/>
-                <OneBarWithLabel label="classical (2)" progress={state.fitnessScore!.T_c}/>
+                <OneBarWithLabel label={`bullet (${state.params.Pb.Gtarget})`} progress={state.fitnessScore!.T_b}/>
+                <OneBarWithLabel label={`blitz (${state.params.Pz.Gtarget})`} progress={state.fitnessScore!.T_z}/>
+                <OneBarWithLabel label={`rapid (${state.params.Pr.Gtarget})`} progress={state.fitnessScore!.T_r}/>
+                <OneBarWithLabel label={`classical (${state.params.Pc.Gtarget})`} progress={state.fitnessScore!.T_c}/>
             </div>
         </div>
+            </div>
     </div>
     </>)
+}
+
+function SliderParameters() {
+
+    const [show, set_show] = createSignal(false)
+
+    return(<>
+        <div class='sliders'>
+            <div class='configure'>
+                <div onClick={() => set_show(!show())} class='button'><BsSliders2 /></div>
+                <Show when={show()}>
+                    <ConfigureParameters />
+                </Show>
+            </div>
+        </div>
+    </>)
+}
+
+
+function ConfigureParameters() {
+
+  const [{ evaluate_state: state }, { evaluate_actions: { set_overall_params } }] = useState()
+
+  const on_T_changed = 
+    (param_a: AllowedSpeed) => 
+      (value: number) => set_overall_params(param_a, 'T_ratio', value)
+
+
+  return (<>
+    <div class='configure-parameters-form'>
+      <div class='classical'>
+        <ConfigureParametersForTimeControl name="classical" params={state.params.Pc} />
+      </div>
+      <div class='rapid'>
+        <ConfigureParametersForTimeControl name="rapid" params={state.params.Pr}  />
+      </div>
+      <div class='bullet'>
+        <ConfigureParametersForTimeControl name="bullet" params={state.params.Pb} />
+      </div>
+      <div class='blitz'>
+        <ConfigureParametersForTimeControl name="blitz" params={state.params.Pz}  />
+      </div>
+
+      <div class='general'>
+        <div class='title'> Overall Parameters</div>
+
+        <small>How much each time control contributes to the overall score</small>
+        <div class='input-group2'>
+        <div>
+          <label for='T_bullet'>Bullet Factor</label>
+          <Slider name={`T_bullet`} step={0.1} min={0} max={1} value={state.params.Tb} on_value_changed={on_T_changed('bullet')} />
+        </div>
+
+        <div>
+          <label for='T_bullet'>Blitz Factor</label>
+          <Slider name={`T_blitz`} step={0.1} min={0} max={1} value={state.params.Tz} on_value_changed={on_T_changed('blitz')} />
+        </div>
+        <div>
+          <label for='T_bullet'>Rapid Factor</label>
+          <Slider name={`T_rapid`} step={0.1} min={0} max={1} value={state.params.Tr} on_value_changed={on_T_changed('rapid')} />
+        </div>
+        <div>
+          <label for='T_bullet'>Classical Factor</label>
+
+          <Slider name={`T_classical`} step={0.1} min={0} max={1} value={state.params.Tc} on_value_changed={on_T_changed('classical')} />
+        </div>
+        </div>
+      </div>
+    </div>
+  </>)
+}
+
+function ConfigureParametersForTimeControl(props: { name: AllowedSpeed, params: TT_Params}) {
+
+  const [,{ evaluate_actions: { set_overall_params }}] = useState()
+
+  const on_g_target_changed = (value: number) => {
+    set_overall_params(props.name, 'g_target', value)
+  }
+  const on_alpha_changed = (value: number) => {
+    set_overall_params(props.name, 'alpha', value)
+  }
+  const on_gamma_you_changed = (value: number) => {
+    set_overall_params(props.name, 'gamma', value)
+  }
+  const on_lambda_opp_changed = (value: number) => {
+    set_overall_params(props.name, 'lambda', value)
+  }
+
+  return (<>
+    <div class='title'> {props.name} Parameters</div>
+
+
+    <div class='input-group'>
+      <div class='labels'>
+        <label for={`G_target_${props.name}`}>Target number of games</label>
+      </div>
+
+      <Slider name={`G_target_${props.name}`} min={0} max={50} value={props.params.Gtarget} on_value_changed={on_g_target_changed}/>
+    </div>
+
+
+    <div class='input-group'>
+      <div class='labels'>
+        <label for={`alpha_${props.name}`}>Quality Alpha</label>
+        <small>(Mixing between quantity vs quality)</small>
+      </div>
+      <Slider name={`alpha_${props.name}`} step={0.2} min={0} max={1} value={props.params.alpha} on_value_changed={on_alpha_changed}/>
+    </div>
+
+
+
+    <div class='input-group'>
+      <div class='labels'>
+        <label for={`you_gamma_${props.name}`}>Your divergence Gamma</label>
+        <small>(Less forgiving, more strict)</small>
+      </div>
+      <Slider name={`you_gamma_${props.name}`} step={0.2} min={-1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed}/>
+    </div>
+
+    <div class='input-group'>
+      <div class='labels'>
+        <label for={`opp_lambda_${props.name}`}>Opponent's divergence Lambda</label>
+        <small>(Less strict, more forgiving)</small>
+      </div>
+      <Slider name={`opp_lambda_${props.name}`} step={0.2} min={0} max={1} value={props.params.cc.Lambda_opp} on_value_changed={on_lambda_opp_changed}/>
+    </div>
+
+  </>)
+}
+
+function Slider(props: { name: string, step?: number, min: number, max: number, value: number, on_value_changed: (_: number) => void }) {
+
+  const [G_target, set_G_target] = createSignal(props.value)
+
+  const G_target_with_padding = createMemo(() => pad_float(G_target(), props.max < 2))
+
+  onMount(() => {
+    createEffect(() => {
+      $input.value = `${props.value}`
+    })
+  })
+
+  let $input!: HTMLInputElement
+
+  return (<>
+    <div class='slider'>
+      <span class='value'>{G_target_with_padding()}</span>
+      <input ref={$input} step={props.step??1} min={props.min} max={props.max} id={`G_target_${props.name}`} type='range' value={G_target()} onInput={_ => {
+        let value = parseFloat((_.target as HTMLInputElement).value)
+        set_G_target(value)
+        props.on_value_changed(value)
+      }} />
+    </div>
+  </>)
 }
 
 

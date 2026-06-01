@@ -369,8 +369,115 @@ main.evaluator {
 }
 
 
+main.evaluator {
+    .assesment-with-config {
+        .sliders {
+ 
+            .configure {
+                display: flex;
+                flex-flow: column;
+                margin-left: variables.$m2;
+                @include variables.google-sans-flex(500);
+                color: variables.$grey3;
+
+                .button {
+                    color: variables.$green1;
+                    cursor: pointer;
+                    align-self: flex-end;
+                }
+
+                .configure-parameters-form {
+
+                    display: grid;
+
+                    grid-template-columns: 1fr 1fr;
+                    gap: variables.$l0;
+                    row-gap: variables.$l0;
+
+                    .title {
+                        color: variables.$green2;
+                        text-transform: capitalize;
+                    }
+
+                    .input-group2 {
+                        display: flex;
+                    }
+
+                    .input-group {
+                        display: flex;
+                        flex-flow: column;
+
+                        max-width: 40vw;
+
+                        .labels {
+                            display: flex;
+                            flex-flow: column;
+
+                            @include variables.respond-to('sm') {
+                                flex-flow: row;
+                                align-items: center;
+                                gap: variables.$s1;
+                            }
+
+                        }
+
+                        small {
+                            font-size: variables.$s25;
+                        }
+                    }
+
+                        .slider {
+                            display: flex;
+                            flex: 1;
+                            align-items: center;
+
+                            gap: variables.$m0;
+                            padding-inline: variables.$s2;
+
+                            input {
+                                flex: 1;
+                                cursor: pointer;
+                            }
+
+                            .value {
+                                color: variables.$green0;
+                            }
+                        }
+
+
+                }
+            }
+        }
+    }
+}
 
 main.evaluator {
+
+    .assesment-with-config {
+        display: flex;
+        flex-flow: column;
+    }
+
+    .assesment-with-config {
+        .sliders {
+            align-self: flex-end;
+
+
+            .button {
+                @include variables.no-select;
+                margin: variables.$s1;
+                padding: variables.$s2;
+                margin-bottom: 0;
+                font-size: variables.$m3;
+                border-radius: variables.$s2;
+                &:hover {
+                    background: variables.$navy-3;
+                    color: variables.$white0;
+                }
+            }
+        }
+    }
+
     .assesment {
         display: flex;
         flex-flow: column;
