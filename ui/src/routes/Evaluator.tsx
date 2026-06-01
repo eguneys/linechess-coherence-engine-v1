@@ -78,11 +78,15 @@ function RecentMatches() {
         window.location.href = `https://lichess.org/${id}`
     }
 
+    const list = createMemo(() => {
+        return state.fitnessScore!.NAll.sort((a, b) => b.match.game.created_at - a.match.game.created_at)
+    })
+
     return (<>
     <div class='recent-matches'>
         <div class='title'><FiCompass/>Played Recent Matches</div>
         <div class='list'>
-            <For each={state.fitnessScore!.NAll}>{item => 
+            <For each={list()}>{item => 
                <div onClick={() => on_open_lichess_game(item.match.game.lichess_game_id)} class='item'>
                         <div class='title'> 
                             <Show when={item.match.diverge} fallback={<div class='unknown'>Unknown opening</div>}>{ diverge =>

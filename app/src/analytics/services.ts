@@ -14,26 +14,27 @@ let aggregator_cache = make_game_aggregator_cache()
 
 const FETCH_THRESHOLD = 1000 * 30
 
-let qpj_manager = new QPJ_Manager<DivergedGame>(async (username: string, since: number) => {
-
-    let since_until_yesterday = Math.max(since, YesterdayMs())
+const format = (date: Date) => `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+const formatN = (n: number) => format(new Date(n))
+let qpj_manager = new QPJ_Manager<DivergedGame>(async (username: string) => {
 
     let lines_db_version = await get_lines_db_version()
 
     let { games, cached_since, diverged } = await aggregator_cache.get_past_by_username(username, lines_db_version)
 
-    let missingDuration = Math.max(0, since_until_yesterday - cached_since)
+    let now = Date.now()
+    let missingDuration = Math.max(0, now - cached_since)
 
     try {
-
         if (missingDuration > FETCH_THRESHOLD) {
+            let since_until_yesterday = now - 86400000 // one day
             let { cancel, stream } = lichess_api.fetch_games(username, since_until_yesterday)
             for await (const game of stream) {
                 games.add_game(game)
             }
             let res = await games.finish_games()
 
-            aggregator_cache.update_cached_since(username, since_until_yesterday, res)
+            aggregator_cache.update_cached_since(username, now, res)
 
             return [...res, ...diverged]
         }

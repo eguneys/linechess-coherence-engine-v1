@@ -1,11 +1,12 @@
 import { createAsync } from "@solidjs/router"
-import type { DashboardState } from "./dashboard_state"
+import type { DashboardActions } from "./dashboard_state"
 import { create_evaluate_api } from "./evaluate_api"
 import { makePersisted } from "@solid-primitives/storage"
 import { createStore } from "solid-js/store"
 import { batch, createMemo } from "solid-js"
 import { Default_O_params, FitnessFromRecentMatches, type FitnessScore2, type Overall_Params } from "./fitness2"
 import { APIError } from "./db_sync/api"
+import type { DivergedGame } from "./shared_types"
 
 export type EvaluateState = {
     fitnessScore: FitnessScore2 | undefined
@@ -25,16 +26,20 @@ export type PersistedState = {
     overall_params: Overall_Params
 }
 
-export function make_evaluate_store(_dashboard_state: DashboardState): EvaluateStore {
+export function make_evaluate_store(dashboard_actions: DashboardActions): EvaluateStore {
 
     const [store, set_store] = makePersisted(createStore<PersistedState>({
         username: '',
         overall_params: Default_O_params
     }))
 
+    dashboard_actions.set_on_login((username: string) => {
+        set_store('username', username)
+    })
+
     let api = create_evaluate_api()
 
-    let diverge_games = createAsync(async () => {
+    let diverge_games = createAsync<{ username: string, games: DivergedGame[]} | 'api-error' | 'not-found' | undefined>(async () => {
         if (store.username.length < 3) {
             return undefined
         }
@@ -55,7 +60,7 @@ export function make_evaluate_store(_dashboard_state: DashboardState): EvaluateS
 
         let res = diverge_games()
 
-        if (res === undefined || res === 'not-found') {
+        if (res === undefined || res === 'not-found' || res === 'api-error') {
             return undefined
         }
 
@@ -69,7 +74,7 @@ export function make_evaluate_store(_dashboard_state: DashboardState): EvaluateS
 
         let res = diverge_games()
 
-        if (res === undefined || res === 'not-found') {
+        if (res === undefined || res === 'not-found' || res === 'api-error') {
             return undefined
         }
 

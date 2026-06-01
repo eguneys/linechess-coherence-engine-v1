@@ -11,6 +11,7 @@ export type DashboardState = {
 
 
 export type DashboardActions = {
+    set_on_login(cb: (username: string) => void): void
     login_with_lichess(): Promise<void>
     logout(): Promise<void>
 }
@@ -42,6 +43,7 @@ export function make_dashboard(): DashboardStore {
             try {
             let res = await $api.fetch_lichess_username()
                 if (res.username) {
+                    on_login(res.username)
                     set_store('logged_in_profile', { username: res.username })
                 }
             } catch (e) {
@@ -61,7 +63,12 @@ export function make_dashboard(): DashboardStore {
         }
     }
 
+    let on_login = (_: string) => {}
+
     let actions = {
+        set_on_login(cb: (_: string) => void) {
+            on_login = cb
+        },
         async login_with_lichess() {
             set_store('redirecting_login', true)
             await $api.login_with_lichess()

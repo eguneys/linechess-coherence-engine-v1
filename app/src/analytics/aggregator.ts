@@ -45,6 +45,10 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
         return undefined
     }
 
+    if (game.status === 'started' && game.moves.length < 40) {
+        return undefined
+    }
+
     let white = game.players.white.user.name
     let black = game.players.black.user.name
     let you: Color = white.toLowerCase() === username.toLowerCase() ? 'white' : 'black'

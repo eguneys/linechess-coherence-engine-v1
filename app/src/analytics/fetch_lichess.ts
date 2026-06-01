@@ -15,7 +15,7 @@ export function create_lichess_agent(token?: string) {
             return profile.username
         },
         fetch_games(username: string, since: number) {
-            let query = `?since=${since}&perfType=bullet,blitz,rapid,classical`
+            let query = `?since=${since}`//&perfType=bullet,blitz,rapid,classical`
 
             const acceptHeader = 'application/x-ndjson'
 

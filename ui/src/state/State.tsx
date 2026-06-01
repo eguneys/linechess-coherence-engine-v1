@@ -27,7 +27,7 @@ export const LinechessProvider = (props: { children: JSX.Element }) => {
 
     const [dashboard_state, dashboard_actions] = make_dashboard()
     const [linechess_state, linechess_actions] = make_linechess_store(dashboard_state)
-    const [evaluate_state, evaluate_actions] = make_evaluate_store(dashboard_state)
+    const [evaluate_state, evaluate_actions] = make_evaluate_store(dashboard_actions)
 
     const state = {
         linechess_state,
