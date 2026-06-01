@@ -1,1 +1,0 @@
-import{g as e}from"./index-CRR1PNJn.js";/* empty css             */var t=e(`<main class=not-found><div class=box><div class=header>404 · Not Found</div><div class=body><h2>404</h2><span>·</span><p>Not Found`);function n(){return t()}export{n as default};
