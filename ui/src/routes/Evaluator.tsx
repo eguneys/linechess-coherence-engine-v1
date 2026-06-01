@@ -345,7 +345,7 @@ function ConfigureParametersForTimeControl(props: { name: AllowedSpeed, params: 
         <label for={`you_gamma_${props.name}`}>Your divergence Gamma</label>
         <small>(Less forgiving, more strict)</small>
       </div>
-      <Slider name={`you_gamma_${props.name}`} step={0.2} min={-1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed}/>
+      <Slider name={`you_gamma_${props.name}`} step={0.1} min={0.1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed}/>
     </div>
 
     <div class='input-group'>
