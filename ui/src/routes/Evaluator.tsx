@@ -177,10 +177,10 @@ function Assesment() {
         <div class='right'>
             <div class='title'>Profile Assesment: <A href={`https://lichess.org/@/${state.username}`} target="_blank">{state.username}</A></div>
             <div class='bars'>
-                <OneBarWithLabel label={`bullet (${state.params.Pb.Gtarget})`} progress={state.fitnessScore!.T_b}/>
-                <OneBarWithLabel label={`blitz (${state.params.Pz.Gtarget})`} progress={state.fitnessScore!.T_z}/>
-                <OneBarWithLabel label={`rapid (${state.params.Pr.Gtarget})`} progress={state.fitnessScore!.T_r}/>
-                <OneBarWithLabel label={`classical (${state.params.Pc.Gtarget})`} progress={state.fitnessScore!.T_c}/>
+                <OneBarWithLabel label={`bullet (${state.params.Pb.Gtarget})`} progress={state.fitnessScore!.T_b * 100}/>
+                <OneBarWithLabel label={`blitz (${state.params.Pz.Gtarget})`} progress={state.fitnessScore!.T_z * 100}/>
+                <OneBarWithLabel label={`rapid (${state.params.Pr.Gtarget})`} progress={state.fitnessScore!.T_r * 100}/>
+                <OneBarWithLabel label={`classical (${state.params.Pc.Gtarget})`} progress={state.fitnessScore!.T_c * 100}/>
             </div>
         </div>
             </div>
