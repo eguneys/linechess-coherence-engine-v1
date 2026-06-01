@@ -79,8 +79,10 @@ export default function Main() {
         <div class='lines'>
                 <div class='header'>
                     <div class='title'>1. The Ruy Lopez (Spanish Game)</div>
+                    <div class='buttons'>
                     <button class='coherence'><BiRegularBrain/>Measure Coherence</button>
                     <button onClick={() => set_open_create_new_line(true)} class='primary'><BsPlus/>Add Line</button>
+                    </div>
                 </div>
                 <div class='content'>
                     <div class='list'>

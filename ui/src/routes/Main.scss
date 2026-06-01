@@ -244,8 +244,16 @@ main.composition {
 
         .header {
                 display: flex;
+                flex-flow: column;
+                align-items: flex-start;
+
+
+                @include variables.respond-to("md") {
+                    flex-flow: row;
+                }
+
+
                 @include variables.google-sans-flex(500);
-                align-items: center;
                 color: variables.$white1;
 
                 border-bottom: variables.$px solid variables.$black2;
@@ -256,6 +264,12 @@ main.composition {
                 .title {
                     flex: 1;
                     text-transform: uppercase;
+                }
+
+                .buttons {
+                    display: flex;
+                    gap: variables.$s1;
+                    align-self: flex-end;
                 }
 
                 &> svg {
