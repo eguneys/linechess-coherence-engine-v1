@@ -10,9 +10,9 @@ export function get_move_fens_for_san_moves(sans: string[]) {
     let fens = []
     for (let san of sans) {
         let move = parseSan(pos, san)!
+        pos.play(move)
         let fen = makeFen(pos.toSetup())
         fens.push(fen)
-        pos.play(move)
     }
 
     return fens

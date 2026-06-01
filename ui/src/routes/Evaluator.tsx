@@ -132,9 +132,9 @@ function RecentMatches() {
 
 
 function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number }) {
-    const well_put = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(0, props.diverge_at_ply - 1) : [])
-    const diverged = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(props.diverge_at_ply - 1) : props.played.split(' '))
-    const diverge_at_ply = createMemo(() => props.diverge_at_ply ? props.diverge_at_ply - 1 : 0)
+    const well_put = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(0, props.diverge_at_ply) : [])
+    const diverged = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(props.diverge_at_ply) : props.played.split(' '))
+    const diverge_at_ply = createMemo(() => props.diverge_at_ply ? props.diverge_at_ply : 0)
 
 
     return (<>
