@@ -419,6 +419,30 @@ main.evaluator {
                         color: variables.$green2;
                         text-transform: capitalize;
                     }
+                    
+                    .show-advanced {
+                        display: flex;
+                        align-items: center;
+                        justify-self: flex-end;
+                        gap: variables.$s2;
+                        color: variables.$grey1;
+                        margin-right: variables.$s2;
+
+                        @include variables.no-select;
+
+                        &:hover {
+                            color: variables.$navy0;
+                        }
+                    }
+                
+
+                    .advanced {
+                        display: none;
+
+                        &.show {
+                            display: block;
+                        }
+                    }
 
                     .input-group2 {
                         display: flex;

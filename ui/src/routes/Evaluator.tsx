@@ -1,7 +1,7 @@
 import { BiRegularBrain } from "solid-icons/bi";
 import './Evaluator.scss'
 import { FiCompass, FiSearch } from "solid-icons/fi";
-import { BsQuestionSquare, BsSliders2 } from "solid-icons/bs";
+import { BsMeasuringCup, BsQuestionSquare, BsSliders2 } from "solid-icons/bs";
 import { createEffect, createMemo, createSelector, createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch } from "solid-js";
 import { A } from "@solidjs/router";
 import { useState } from "../state/State";
@@ -317,6 +317,8 @@ function ConfigureParametersForTimeControl(props: { name: AllowedSpeed, params: 
     set_overall_params(props.name, 'lambda', value)
   }
 
+  const [show_advanced, set_show_advanced] = createSignal(false)
+
   return (<>
     <div class='title'> {props.name} Parameters</div>
 
@@ -329,33 +331,35 @@ function ConfigureParametersForTimeControl(props: { name: AllowedSpeed, params: 
       <Slider name={`G_target_${props.name}`} min={0} max={50} value={props.params.Gtarget} on_value_changed={on_g_target_changed}/>
     </div>
 
+    <div class='show-advanced' onClick={() => set_show_advanced(!show_advanced())}>Advanced <BsMeasuringCup/></div>
 
-    <div class='input-group'>
-      <div class='labels'>
-        <label for={`alpha_${props.name}`}>Quality Alpha</label>
-        <small>(Mixing between quantity vs quality)</small>
+      <div class='advanced' classList={{show: show_advanced()}}>
+          <div class='input-group'>
+              <div class='labels'>
+                  <label for={`alpha_${props.name}`}>Quality Alpha</label>
+                  <small>(Mixing between quantity vs quality)</small>
+              </div>
+              <Slider name={`alpha_${props.name}`} step={0.2} min={0} max={1} value={props.params.alpha} on_value_changed={on_alpha_changed} />
+          </div>
+
+
+
+          <div class='input-group'>
+              <div class='labels'>
+                  <label for={`you_gamma_${props.name}`}>Your divergence Gamma</label>
+                  <small>(Less forgiving, more strict)</small>
+              </div>
+              <Slider name={`you_gamma_${props.name}`} step={0.1} min={0.1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed} />
+          </div>
+
+          <div class='input-group'>
+              <div class='labels'>
+                  <label for={`opp_lambda_${props.name}`}>Opponent's divergence Lambda</label>
+                  <small>(Less strict, more forgiving)</small>
+              </div>
+              <Slider name={`opp_lambda_${props.name}`} step={0.2} min={0} max={1} value={props.params.cc.Lambda_opp} on_value_changed={on_lambda_opp_changed} />
+          </div>
       </div>
-      <Slider name={`alpha_${props.name}`} step={0.2} min={0} max={1} value={props.params.alpha} on_value_changed={on_alpha_changed}/>
-    </div>
-
-
-
-    <div class='input-group'>
-      <div class='labels'>
-        <label for={`you_gamma_${props.name}`}>Your divergence Gamma</label>
-        <small>(Less forgiving, more strict)</small>
-      </div>
-      <Slider name={`you_gamma_${props.name}`} step={0.1} min={0.1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed}/>
-    </div>
-
-    <div class='input-group'>
-      <div class='labels'>
-        <label for={`opp_lambda_${props.name}`}>Opponent's divergence Lambda</label>
-        <small>(Less strict, more forgiving)</small>
-      </div>
-      <Slider name={`opp_lambda_${props.name}`} step={0.2} min={0} max={1} value={props.params.cc.Lambda_opp} on_value_changed={on_lambda_opp_changed}/>
-    </div>
-
   </>)
 }
 
