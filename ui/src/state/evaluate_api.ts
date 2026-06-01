@@ -1,4 +1,4 @@
-import { $ } from "./db_sync/api"
+import { $ } from "./api_agent"
 import type { DivergedGame } from "./shared_types"
 
 export type EvaluateAPIResult = {

@@ -7,12 +7,7 @@ import { router } from "./controller.js";
 import bodyParser from "body-parser";
 import { runMigrations } from "./migrations.js";
 import cors from 'cors'
-
 import { DEV, SECRET, WEB_DOMAIN } from './config.js'
-
-// @ts-ignore
-import store from 'better-express-store'
-import session from 'express-session'
 
 let app = express()
 
@@ -26,8 +21,8 @@ app.use(cors({
 app.use(express.json())
 app.use(bodyParser.json());
 
-//app.set('trust proxy', 'loopback')
-app.set('trust proxy', 1)
+app.set('trust proxy', 'loopback')
+//app.set('trust proxy', 1)
 
 
 import { PORT as CONFIG_PORT } from './config.js'
@@ -36,22 +31,6 @@ import { PORT as CONFIG_PORT } from './config.js'
 
 init_db().then(async (db) => {
   await runMigrations(db)
-
-
-  let store2 = store({ dbPath: 'data/sessions.db'})
-
-  app.use(session({
-    store: store2,
-    secret: SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: !DEV,
-      sameSite: DEV ? 'lax' : 'none',
-      maxAge: 80 * 24 * 60 * 60 * 1000, // 80 days
-      domain: DEV ? undefined : `.linechess.com`,
-    }
-  }))
 
   app.use((req, _, next) => {
     inc(metrics.requests, req.path)
@@ -84,7 +63,6 @@ init_db().then(async (db) => {
     })
 
 
-
     res.status(500).send({
       error: 'Internal server error'
     })
@@ -93,7 +71,6 @@ init_db().then(async (db) => {
   app.use((req, res) => {
     res.status(404).send({ error: "Not found" });
   });
-
 
 
   const PORT = process.env.PORT || CONFIG_PORT || 3300

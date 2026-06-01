@@ -5,8 +5,8 @@ import { makePersisted } from "@solid-primitives/storage"
 import { createStore } from "solid-js/store"
 import { batch, createMemo } from "solid-js"
 import { Default_O_params, FitnessFromRecentMatches, type FitnessScore2, type Overall_Params } from "./fitness2"
-import { APIError } from "./db_sync/api"
 import type { DivergedGame } from "./shared_types"
+import { APIError } from "./api_agent"
 
 export type EvaluateState = {
     fitnessScore: FitnessScore2 | undefined

@@ -1,3 +1,11 @@
+CREATE TABLE oauth_states (
+    state TEXT PRIMARY KEY,
+    verifier TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    exchange_code TEXT,
+    exchange_token TEXT
+);
+
 CREATE TABLE users (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE,

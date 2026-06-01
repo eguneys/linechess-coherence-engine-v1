@@ -7,3 +7,5 @@ export const PORT = config.PORT
 export const SECRET = config.SECRET
 
 export const WEB_DOMAIN = config.WEB_DOMAIN
+
+export const JWT_SECRET = config.SECRET

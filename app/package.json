@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@types/express-session": "^1.19.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "better-express-store": "^1.0.5",
     "better-sqlite3": "^12.5.0",
     "better-sqlite3-session-store": "^0.1.0",
@@ -33,6 +34,7 @@
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.3",
     "lru-cache": "^11.5.1",
     "ts-better-sqlite3-express-session": "^1.2.1"
   }
