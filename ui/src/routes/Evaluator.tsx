@@ -10,7 +10,7 @@ import type { TT_Params } from "../state/fitness2";
 
 export default function Evaluator() {
 
-    const [{ evaluate_state: state},{ evaluate_actions: { set_evaluate_username}}] = useState()
+    const [{ evaluate_state: state }, { evaluate_actions: { set_evaluate_username } }] = useState()
 
     let $search_input!: HTMLInputElement
 
@@ -36,19 +36,19 @@ export default function Evaluator() {
                 <Suspense fallback={<Loading />}>
                     <Switch fallback={
                         <>
-                        <Assesment/>
-                        <RecentMatches/>
+                            <Assesment />
+                            <RecentMatches />
                         </>
                     }>
                         <Match when={state.api_error} >
-                            <ApiError/>
+                            <ApiError />
                         </Match>
                         <Match when={state.fitnessScore === undefined || state.user_not_found} >
                             <NotFound />
                         </Match>
                     </Switch>
                 </Suspense>
-                <HowItWorks/>
+                <HowItWorks />
             </div>
         </main>
     </>)
@@ -57,23 +57,23 @@ export default function Evaluator() {
 
 function ApiError() {
     return (<>
-    <div class='api-error'>
-        Some server error while fetching games.
-    </div>
+        <div class='api-error'>
+            Some server error while fetching games.
+        </div>
     </>)
 }
 
 function NotFound() {
     return (<>
-    <div class='not-found'>
-        User not found
-    </div>
+        <div class='not-found'>
+            User not found
+        </div>
     </>)
 }
 
 function RecentMatches() {
 
-    const [{ evaluate_state: state}] = useState()
+    const [{ evaluate_state: state }] = useState()
 
     const on_open_lichess_game = (id: LichessGameId) => {
         window.location.href = `https://lichess.org/${id}`
@@ -101,33 +101,33 @@ function RecentMatches() {
     }
 
     return (<>
-    <div class='recent-matches'>
-        <div class='title'><FiCompass/>Played Recent Matches</div>
-        <div class='list'>
-            <For each={list()}>{item => 
-               <div onClick={() => on_open_lichess_game(item.match.game.lichess_game_id)} class='item'>
-                        <div class='title'> 
-                            <Show when={item.match.diverge} fallback={<div class='unknown'>Unknown opening</div>}>{ diverge =>
-                                    <div class='playlist-name'>{diverge().most_matched_line.playlist.name}</div>
+        <div class='recent-matches'>
+            <div class='title'><FiCompass />Played Recent Matches</div>
+            <div class='list'>
+                <For each={list()}>{item =>
+                    <div onClick={() => on_open_lichess_game(item.match.game.lichess_game_id)} class='item'>
+                        <div class='title'>
+                            <Show when={item.match.diverge} fallback={<div class='unknown'>Unknown opening</div>}>{diverge =>
+                                <div class='playlist-name'>{diverge().most_matched_line.playlist.name}</div>
                             }</Show>
                             <span class='time'>{item.match.game.speed}</span>
                         </div>
                         <div class='vs'>
-                            <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A> vs 
+                            <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A> vs
                             <A href={`https://lichess.org/@/${item.match.game.black}`}>{item.match.game.black}</A>
                         </div>
                         <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} line={item.match.diverge?.most_matched_line.line.san_moves} /></div>
                         <div class='long'></div>
-                        <Show when={item.match.diverge} fallback={<p class='unknown'>Opening is not listed in our database.</p>}>{ diverge => 
+                        <Show when={item.match.diverge} fallback={<p class='unknown'>Opening is not listed in our database.</p>}>{diverge =>
                             <p>
                                 <span class='line-name'>{diverge().most_matched_line.line.name}</span> line played from the book
                                 <span class='book-name'>{diverge().most_matched_line.book.name}</span>
                                 by <span class='author'>{diverge().most_matched_line.book.author}</span>
                             </p>
                         }</Show>
-                   <div class="footer">
+                        <div class="footer">
                             <span class='time'>
-                                <MomentsAgo timestamp={item.match.game.created_at}/>
+                                <MomentsAgo timestamp={item.match.game.created_at} />
                             </span>
                             <span class='result'>
                                 <Show when={item.match.game.winner} fallback={
@@ -141,26 +141,26 @@ function RecentMatches() {
                                     <span class='diverged'>{item_who_diverged(item.match)} diverged</span>
                                 }</Show>
                             </span>
-                    <div class='long'></div>
+                            <div class='long'></div>
                             <div class='score'>Score: <Show when={item.Fitness_Score} fallback="---">{score => `${Math.round(score() * 100)}/100`}</Show></div>
-                   </div>
-               </div>
-            }</For>
+                        </div>
+                    </div>
+                }</For>
+            </div>
         </div>
-    </div>
     </>)
 }
 
 
 function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number, line?: string }) {
-    const well_put = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(0, props.diverge_at_ply) : [])
-    const diverged = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(props.diverge_at_ply) : props.played.split(' '))
-    const diverge_at_ply = createMemo(() => props.diverge_at_ply ? props.diverge_at_ply : 0)
-    const continues = createMemo(() => props.line ? props.line.split(' ').slice(props.diverge_at_ply!): [])
+    const well_put = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(0, props.diverge_at_ply - 1) : [])
+    const diverged = createMemo(() => props.diverge_at_ply ? props.played.split(' ').slice(props.diverge_at_ply - 1) : props.played.split(' '))
+    const diverge_at_ply = createMemo(() => props.diverge_at_ply ? props.diverge_at_ply - 1 : 0)
+    const continues = createMemo(() => props.line ? props.line.split(' ').slice(props.diverge_at_ply! - 1) : [])
 
 
     return (<>
-        <div class='played' classList={{hidable: continues().length > 0}}>
+        <div class='played' classList={{ hidable: continues().length > 0 }}>
             <For each={well_put()}>{(item, i) =>
                 <div class='move well'>
                     <Show when={show_index_ply(i())}>{ply =>
@@ -203,30 +203,30 @@ function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number, li
 }
 
 const show_index_ply = (i: number) => {
-    return i % 2 === 0 ? `${(i / 2) + 1}.`: undefined
+    return i % 2 === 0 ? `${(i / 2) + 1}.` : undefined
 }
 
 function Assesment() {
 
-    const [{ evaluate_state: state}] = useState()
+    const [{ evaluate_state: state }] = useState()
 
     return (<>
-    
-    <div class='assesment-with-config'>
-        <SliderParameters/>
-        <div class='assesment'>
-        <div class='ofs'><CircularProgress label="Opening Fitness Score" progress={state.fitnessScore!.fitness_score * 100}/></div>
-        <div class='right'>
-            <div class='title'>Profile Assesment: <A href={`https://lichess.org/@/${state.username}`} target="_blank">{state.username}</A></div>
-            <div class='bars'>
-                <OneBarWithLabel label={`bullet (${state.fitnessScore!.Nb.length}/${state.params.Pb.Gtarget})`} progress={state.fitnessScore!.T_b * 100}/>
-                <OneBarWithLabel label={`blitz (${state.fitnessScore!.Nz.length}/${state.params.Pz.Gtarget})`} progress={state.fitnessScore!.T_z * 100}/>
-                <OneBarWithLabel label={`rapid (${state.fitnessScore!.Nr.length}/${state.params.Pr.Gtarget})`} progress={state.fitnessScore!.T_r * 100}/>
-                <OneBarWithLabel label={`classical (${state.fitnessScore!.Nc.length}/${state.params.Pc.Gtarget})`} progress={state.fitnessScore!.T_c * 100}/>
+
+        <div class='assesment-with-config'>
+            <SliderParameters />
+            <div class='assesment'>
+                <div class='ofs'><CircularProgress label="Opening Fitness Score" progress={state.fitnessScore!.fitness_score * 100} /></div>
+                <div class='right'>
+                    <div class='title'>Profile Assesment: <A href={`https://lichess.org/@/${state.username}`} target="_blank">{state.username}</A></div>
+                    <div class='bars'>
+                        <OneBarWithLabel label={`bullet (${state.fitnessScore!.Nb.length}/${state.params.Pb.Gtarget})`} progress={state.fitnessScore!.T_b * 100} />
+                        <OneBarWithLabel label={`blitz (${state.fitnessScore!.Nz.length}/${state.params.Pz.Gtarget})`} progress={state.fitnessScore!.T_z * 100} />
+                        <OneBarWithLabel label={`rapid (${state.fitnessScore!.Nr.length}/${state.params.Pr.Gtarget})`} progress={state.fitnessScore!.T_r * 100} />
+                        <OneBarWithLabel label={`classical (${state.fitnessScore!.Nc.length}/${state.params.Pc.Gtarget})`} progress={state.fitnessScore!.T_c * 100} />
+                    </div>
+                </div>
             </div>
         </div>
-            </div>
-    </div>
     </>)
 }
 
@@ -234,7 +234,7 @@ function SliderParameters() {
 
     const [show, set_show] = createSignal(false)
 
-    return(<>
+    return (<>
         <div class='sliders'>
             <div class='configure'>
                 <div onClick={() => set_show(!show())} class='button'><BsSliders2 /></div>
@@ -249,144 +249,144 @@ function SliderParameters() {
 
 function ConfigureParameters() {
 
-  const [{ evaluate_state: state }, { evaluate_actions: { set_overall_params } }] = useState()
+    const [{ evaluate_state: state }, { evaluate_actions: { set_overall_params } }] = useState()
 
-  const on_T_changed = 
-    (param_a: AllowedSpeed) => 
-      (value: number) => set_overall_params(param_a, 'T_ratio', value)
+    const on_T_changed =
+        (param_a: AllowedSpeed) =>
+            (value: number) => set_overall_params(param_a, 'T_ratio', value)
 
 
-  return (<>
-    <div class='configure-parameters-form'>
-      <div class='classical'>
-        <ConfigureParametersForTimeControl name="classical" params={state.params.Pc} />
-      </div>
-      <div class='rapid'>
-        <ConfigureParametersForTimeControl name="rapid" params={state.params.Pr}  />
-      </div>
-      <div class='bullet'>
-        <ConfigureParametersForTimeControl name="bullet" params={state.params.Pb} />
-      </div>
-      <div class='blitz'>
-        <ConfigureParametersForTimeControl name="blitz" params={state.params.Pz}  />
-      </div>
+    return (<>
+        <div class='configure-parameters-form'>
+            <div class='classical'>
+                <ConfigureParametersForTimeControl name="classical" params={state.params.Pc} />
+            </div>
+            <div class='rapid'>
+                <ConfigureParametersForTimeControl name="rapid" params={state.params.Pr} />
+            </div>
+            <div class='bullet'>
+                <ConfigureParametersForTimeControl name="bullet" params={state.params.Pb} />
+            </div>
+            <div class='blitz'>
+                <ConfigureParametersForTimeControl name="blitz" params={state.params.Pz} />
+            </div>
 
-      <div class='general'>
-        <div class='title'> Overall Parameters</div>
+            <div class='general'>
+                <div class='title'> Overall Parameters</div>
 
-        <small>How much each time control contributes to the overall score</small>
-        <div class='input-group2'>
-        <div>
-          <label for='T_bullet'>Bullet Factor</label>
-          <Slider name={`T_bullet`} step={0.1} min={0} max={1} value={state.params.Tb} on_value_changed={on_T_changed('bullet')} />
+                <small>How much each time control contributes to the overall score</small>
+                <div class='input-group2'>
+                    <div>
+                        <label for='T_bullet'>Bullet Factor</label>
+                        <Slider name={`T_bullet`} step={0.1} min={0} max={1} value={state.params.Tb} on_value_changed={on_T_changed('bullet')} />
+                    </div>
+
+                    <div>
+                        <label for='T_bullet'>Blitz Factor</label>
+                        <Slider name={`T_blitz`} step={0.1} min={0} max={1} value={state.params.Tz} on_value_changed={on_T_changed('blitz')} />
+                    </div>
+                    <div>
+                        <label for='T_bullet'>Rapid Factor</label>
+                        <Slider name={`T_rapid`} step={0.1} min={0} max={1} value={state.params.Tr} on_value_changed={on_T_changed('rapid')} />
+                    </div>
+                    <div>
+                        <label for='T_bullet'>Classical Factor</label>
+
+                        <Slider name={`T_classical`} step={0.1} min={0} max={1} value={state.params.Tc} on_value_changed={on_T_changed('classical')} />
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div>
-          <label for='T_bullet'>Blitz Factor</label>
-          <Slider name={`T_blitz`} step={0.1} min={0} max={1} value={state.params.Tz} on_value_changed={on_T_changed('blitz')} />
-        </div>
-        <div>
-          <label for='T_bullet'>Rapid Factor</label>
-          <Slider name={`T_rapid`} step={0.1} min={0} max={1} value={state.params.Tr} on_value_changed={on_T_changed('rapid')} />
-        </div>
-        <div>
-          <label for='T_bullet'>Classical Factor</label>
-
-          <Slider name={`T_classical`} step={0.1} min={0} max={1} value={state.params.Tc} on_value_changed={on_T_changed('classical')} />
-        </div>
-        </div>
-      </div>
-    </div>
-  </>)
+    </>)
 }
 
-function ConfigureParametersForTimeControl(props: { name: AllowedSpeed, params: TT_Params}) {
+function ConfigureParametersForTimeControl(props: { name: AllowedSpeed, params: TT_Params }) {
 
-  const [,{ evaluate_actions: { set_overall_params }}] = useState()
+    const [, { evaluate_actions: { set_overall_params } }] = useState()
 
-  const on_g_target_changed = (value: number) => {
-    set_overall_params(props.name, 'g_target', value)
-  }
-  const on_alpha_changed = (value: number) => {
-    set_overall_params(props.name, 'alpha', value)
-  }
-  const on_gamma_you_changed = (value: number) => {
-    set_overall_params(props.name, 'gamma', value)
-  }
-  const on_lambda_opp_changed = (value: number) => {
-    set_overall_params(props.name, 'lambda', value)
-  }
+    const on_g_target_changed = (value: number) => {
+        set_overall_params(props.name, 'g_target', value)
+    }
+    const on_alpha_changed = (value: number) => {
+        set_overall_params(props.name, 'alpha', value)
+    }
+    const on_gamma_you_changed = (value: number) => {
+        set_overall_params(props.name, 'gamma', value)
+    }
+    const on_lambda_opp_changed = (value: number) => {
+        set_overall_params(props.name, 'lambda', value)
+    }
 
-  const [show_advanced, set_show_advanced] = createSignal(false)
+    const [show_advanced, set_show_advanced] = createSignal(false)
 
-  return (<>
-    <div class='title'> {props.name} Parameters</div>
-
-
-    <div class='input-group'>
-      <div class='labels'>
-        <label for={`G_target_${props.name}`}>Target number of games</label>
-      </div>
-
-      <Slider name={`G_target_${props.name}`} min={0} max={50} value={props.params.Gtarget} on_value_changed={on_g_target_changed}/>
-    </div>
-
-    <div class='show-advanced' onClick={() => set_show_advanced(!show_advanced())}>Advanced <BsMeasuringCup/></div>
-
-      <div class='advanced' classList={{show: show_advanced()}}>
-          <div class='input-group'>
-              <div class='labels'>
-                  <label for={`alpha_${props.name}`}>Quality Alpha</label>
-                  <small>(Mixing between quantity vs quality)</small>
-              </div>
-              <Slider name={`alpha_${props.name}`} step={0.2} min={0} max={1} value={props.params.alpha} on_value_changed={on_alpha_changed} />
-          </div>
+    return (<>
+        <div class='title'> {props.name} Parameters</div>
 
 
+        <div class='input-group'>
+            <div class='labels'>
+                <label for={`G_target_${props.name}`}>Target number of games</label>
+            </div>
 
-          <div class='input-group'>
-              <div class='labels'>
-                  <label for={`you_gamma_${props.name}`}>Your divergence Gamma</label>
-                  <small>(Less forgiving, more strict)</small>
-              </div>
-              <Slider name={`you_gamma_${props.name}`} step={0.1} min={0.1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed} />
-          </div>
+            <Slider name={`G_target_${props.name}`} min={0} max={50} value={props.params.Gtarget} on_value_changed={on_g_target_changed} />
+        </div>
 
-          <div class='input-group'>
-              <div class='labels'>
-                  <label for={`opp_lambda_${props.name}`}>Opponent's divergence Lambda</label>
-                  <small>(Less strict, more forgiving)</small>
-              </div>
-              <Slider name={`opp_lambda_${props.name}`} step={0.2} min={0} max={1} value={props.params.cc.Lambda_opp} on_value_changed={on_lambda_opp_changed} />
-          </div>
-      </div>
-  </>)
+        <div class='show-advanced' onClick={() => set_show_advanced(!show_advanced())}>Advanced <BsMeasuringCup /></div>
+
+        <div class='advanced' classList={{ show: show_advanced() }}>
+            <div class='input-group'>
+                <div class='labels'>
+                    <label for={`alpha_${props.name}`}>Quality Alpha</label>
+                    <small>(Mixing between quantity vs quality)</small>
+                </div>
+                <Slider name={`alpha_${props.name}`} step={0.2} min={0} max={1} value={props.params.alpha} on_value_changed={on_alpha_changed} />
+            </div>
+
+
+
+            <div class='input-group'>
+                <div class='labels'>
+                    <label for={`you_gamma_${props.name}`}>Your divergence Gamma</label>
+                    <small>(Less forgiving, more strict)</small>
+                </div>
+                <Slider name={`you_gamma_${props.name}`} step={0.1} min={0.1} max={2} value={props.params.cc.Gamma_you} on_value_changed={on_gamma_you_changed} />
+            </div>
+
+            <div class='input-group'>
+                <div class='labels'>
+                    <label for={`opp_lambda_${props.name}`}>Opponent's divergence Lambda</label>
+                    <small>(Less strict, more forgiving)</small>
+                </div>
+                <Slider name={`opp_lambda_${props.name}`} step={0.2} min={0} max={1} value={props.params.cc.Lambda_opp} on_value_changed={on_lambda_opp_changed} />
+            </div>
+        </div>
+    </>)
 }
 
 function Slider(props: { name: string, step?: number, min: number, max: number, value: number, on_value_changed: (_: number) => void }) {
 
-  const [G_target, set_G_target] = createSignal(props.value)
+    const [G_target, set_G_target] = createSignal(props.value)
 
-  const G_target_with_padding = createMemo(() => pad_float(G_target(), props.max < 2))
+    const G_target_with_padding = createMemo(() => pad_float(G_target(), props.max < 2))
 
-  onMount(() => {
-    createEffect(() => {
-      $input.value = `${props.value}`
+    onMount(() => {
+        createEffect(() => {
+            $input.value = `${props.value}`
+        })
     })
-  })
 
-  let $input!: HTMLInputElement
+    let $input!: HTMLInputElement
 
-  return (<>
-    <div class='slider'>
-      <span class='value'>{G_target_with_padding()}</span>
-      <input ref={$input} step={props.step??1} min={props.min} max={props.max} id={`G_target_${props.name}`} type='range' value={G_target()} onInput={_ => {
-        let value = parseFloat((_.target as HTMLInputElement).value)
-        set_G_target(value)
-        props.on_value_changed(value)
-      }} />
-    </div>
-  </>)
+    return (<>
+        <div class='slider'>
+            <span class='value'>{G_target_with_padding()}</span>
+            <input ref={$input} step={props.step ?? 1} min={props.min} max={props.max} id={`G_target_${props.name}`} type='range' value={G_target()} onInput={_ => {
+                let value = parseFloat((_.target as HTMLInputElement).value)
+                set_G_target(value)
+                props.on_value_changed(value)
+            }} />
+        </div>
+    </>)
 }
 
 
@@ -395,7 +395,7 @@ function CircularProgress(props: { label: string, progress: number }) {
         <div class='ofsbar-label'>
             <div class='label'>{props.label} <span class='value'>{Math.floor(props.progress)}%</span></div>
             <div class='bar-bg'>
-               <div class='bar' style={{width: `${props.progress}%`}}></div>
+                <div class='bar' style={{ width: `${props.progress}%` }}></div>
             </div>
         </div>
     </>)
@@ -404,24 +404,24 @@ function CircularProgress(props: { label: string, progress: number }) {
 function OneBarWithLabel(props: { label: string, progress: number }) {
 
     return (<>
-    
-    <div class='onebar-label'>
-        <div class='label'>{props.label} <span class='value'>{Math.floor(props.progress)}%</span></div>
-        <div class='bar-bg'>
-        <div class='bar' style={{width: `${props.progress}%`}}></div>
+
+        <div class='onebar-label'>
+            <div class='label'>{props.label} <span class='value'>{Math.floor(props.progress)}%</span></div>
+            <div class='bar-bg'>
+                <div class='bar' style={{ width: `${props.progress}%` }}></div>
+            </div>
         </div>
-    </div>
     </>)
 }
 
 function Loading() {
     return (<>
-    <div class='loading'>
-        <SpinnerDots/>
-        <div class='title'>Calculating Opening Fitness Score...</div>
-        <p>
-        </p>
-    </div>
+        <div class='loading'>
+            <SpinnerDots />
+            <div class='title'>Calculating Opening Fitness Score...</div>
+            <p>
+            </p>
+        </div>
     </>)
 }
 
@@ -451,11 +451,11 @@ function SpinnerDots() {
     })
 
     return (<>
-    <div class='spinner'>
-            <span class='dot' classList={{one: is_one('one')}}>.</span>
-            <span class='dot' classList={{one: is_one('two')}}>.</span>
-            <span class='dot' classList={{one: is_one('three')}}>.</span>
-    </div>
+        <div class='spinner'>
+            <span class='dot' classList={{ one: is_one('one') }}>.</span>
+            <span class='dot' classList={{ one: is_one('two') }}>.</span>
+            <span class='dot' classList={{ one: is_one('three') }}>.</span>
+        </div>
     </>)
 }
 
