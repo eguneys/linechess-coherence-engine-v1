@@ -76,7 +76,7 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
 export function make_game_aggregator_cache() {
 
     let cache_by_username = new LRUCache<Username, AggregatorCacheItem>({
-        max: 500,
+        max: 20,
     })
 
     async function get_past_by_username(username: string, version: number) {
@@ -112,7 +112,10 @@ export function make_game_aggregator_cache() {
         let res = cache_by_username.get(username)
 
         if (res) {
+
+            let since_yesterday = since - 86400000 // one day
             res.cached_since = since
+            res.diverged = res.diverged.filter(_ => _.game.created_at > since_yesterday)
             res.diverged.push(...diverged)
         }
     }
