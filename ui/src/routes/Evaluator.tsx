@@ -113,8 +113,8 @@ function RecentMatches() {
                             <span class='time'>{item.match.game.speed}</span>
                         </div>
                         <div class='vs'>
-                            <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A> vs
-                            <A href={`https://lichess.org/@/${item.match.game.black}`}>{item.match.game.black}</A>
+                            <A href={`https://lichess.org/@/${item.match.game.white}`}> {item.match.game.white}</A> vs
+                            <A href={`https://lichess.org/@/${item.match.game.black}`}> {item.match.game.black}</A>
                         </div>
                         <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} line={item.match.diverge?.most_matched_line.line.san_moves} /></div>
                         <div class='long'></div>

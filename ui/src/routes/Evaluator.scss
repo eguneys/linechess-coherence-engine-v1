@@ -172,6 +172,10 @@ main.evaluator {
                         display: flex;
                         gap: variables.$s2;
                     }
+
+                    .result .diverged {
+                        color: variables.$purple-2;
+                    }
                 }
             }
         }
