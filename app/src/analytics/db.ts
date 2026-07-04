@@ -10,7 +10,7 @@ function find_diverge_for_game(game: NormalizedGame, line: FenStepLineInABook): 
     let diverge_at_ply = line.fen_step.ply + 1
 
 
-    let did_you_diverge = (game.white === game.you) === (diverge_at_ply % 2 === 0)
+    let did_you_diverge = ('white' === game.you) === (diverge_at_ply % 2 === 1)
 
     return {
         diverge_at_ply,
