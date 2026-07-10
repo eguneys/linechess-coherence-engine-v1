@@ -181,7 +181,7 @@ function AddNewLineDialog() {
   }
 
   let $opening_line_name_text!: HTMLInputElement
-  let $opening_line_pgn_text!: HTMLInputElement
+  let $opening_line_pgn_text!: HTMLTextAreaElement
 
   let $selected_book!: HTMLSelectElement
   let $selected_playlist!: HTMLSelectElement
@@ -217,7 +217,7 @@ function AddNewLineDialog() {
 
             <div class='input-group'>
               <label for="opening_line_pgn">Line PGN</label>
-              <textarea class='pgn' resize="none" rows="2" spellcheck="false" autocorrect="off" aria-invalid={!!pgn_error()} minLength={8} required={true} ref={$opening_line_pgn_text} id="opening_line_pgn" type='text' placeholder="e.g. 1.e4 e5 2. c4 c5 ..." value={state.add_new_line_pgn ?? ''}></textarea>
+              <textarea class='pgn' rows="2" spellcheck="false" autocorrect="off" aria-invalid={!!pgn_error()} minLength={8} required={true} ref={$opening_line_pgn_text} id="opening_line_pgn" placeholder="e.g. 1.e4 e5 2. c4 c5 ..." value={state.add_new_line_pgn ?? ''}></textarea>
 
               <button onClick={paste_pgn} class='secondary'>Paste PGN</button>
             </div>
