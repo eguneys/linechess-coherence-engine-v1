@@ -326,7 +326,15 @@ main.composition {
                         padding: variables.$s1;
 
                         .move {
+                            display: flex;
                             padding: variables.$s1;
+                            gap: variables.$s0;
+                        
+                            .index {
+                                color: variables.$grey-4;
+                            }
+
+
                         }
                     }
                }
@@ -684,6 +692,7 @@ main.composition {
                         text-transform: uppercase;
                         line-height: variables.$m2;
                     }
+
                     input.pgn {
                         color: variables.$navy-6;
 
@@ -692,6 +701,17 @@ main.composition {
                         }
 
                     }
+
+                    textarea.pgn {
+                        color: variables.$navy-6;
+
+                        &::placeholder {
+                           color: variables.$navy-4;
+                        }
+
+                    }
+
+
 
                 }
 

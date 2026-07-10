@@ -453,6 +453,24 @@ main {
             border: variables.$px dashed variables.$red1;
         }
     }
+    textarea {
+        resize: none;
+        background: variables.$navy2;
+        border: none;
+        padding: variables.$m0;
+        border-radius: variables.$m0;
+
+        color: variables.$white1;
+        @include variables.google-sans-flex(500);
+
+        &::placeholder {
+           color: variables.$grey2;
+        }
+
+        &:invalid {
+            border: variables.$px dashed variables.$red1;
+        }
+    }
 }
 
 

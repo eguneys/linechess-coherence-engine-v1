@@ -202,7 +202,7 @@ function PgnMovesDivergence(props: { played: string, diverge_at_ply?: number, li
     </>)
 }
 
-const show_index_ply = (i: number) => {
+export const show_index_ply = (i: number) => {
     return i % 2 === 0 ? `${(i / 2) + 1}.` : undefined
 }
 
