@@ -8,12 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/express-session':
-        specifier: ^1.19.0
-        version: 1.19.0
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
       better-express-store:
         specifier: ^1.0.5
         version: 1.0.5
@@ -24,7 +18,7 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       body-parser:
-        specifier: ^2.2.1
+        specifier: ^2.2.2
         version: 2.2.2
       chessops:
         specifier: ^0.15.0
@@ -54,6 +48,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
+      '@types/body-parser':
+        specifier: ^1.19.6
+        version: 1.19.6
       '@types/cookie-parser':
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
@@ -63,6 +60,15 @@ importers:
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+      '@types/express-serve-static-core':
+        specifier: ^5.1.1
+        version: 5.1.1
+      '@types/express-session':
+        specifier: ^1.19.0
+        version: 1.19.0
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       '@types/node':
         specifier: ^25.0.1
         version: 25.9.1

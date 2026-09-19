@@ -20,7 +20,7 @@ echo "▶ Creating data directory.."
 ssh $SERVER "cd $APP_DIR && mkdir -p data"
 
 echo "▶ Installing production dependencies on server..."
-ssh $SERVER "cd $APP_DIR && pnpm install --frozen-lockfile --prod"
+ssh $SERVER "cd $APP_DIR && CI=true pnpm install --frozen-lockfile --prod"
 
 
 echo "▶ Restarting service..."
