@@ -49,8 +49,8 @@ function map_lichess_export_game_to_normalized(username: string, game: exportGam
         return undefined
     }
 
-    let white = game.players.white.user.name
-    let black = game.players.black.user.name
+    let white = game.players.white.aiLevel ? `Stockfish ${game.players.white.aiLevel}` : game.players.white.user!.name
+    let black = game.players.black.aiLevel ? `Stockfish ${game.players.black.aiLevel}` : game.players.black.user!.name
     let you: Color = white.toLowerCase() === username.toLowerCase() ? 'white' : 'black'
     let did_you_win = game.winner === you
     let did_you_draw = game.status === 'draw'

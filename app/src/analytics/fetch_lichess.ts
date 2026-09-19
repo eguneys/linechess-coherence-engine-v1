@@ -2,8 +2,8 @@ const API_ENDPOINT = 'https://lichess.org'
 export function create_lichess_agent(token?: string) {
     const $ = (path: string) => {
 
-        let headers = token ?  {
-                'Authorization': `Bearer ${token}`
+        let headers = token ? {
+            'Authorization': `Bearer ${token}`
         } : undefined
         return fetch_stream(path, { headers }).then(_ => _.json())
     }
@@ -27,51 +27,51 @@ export function create_lichess_agent(token?: string) {
 
 export type openingVariants = 'standard' | 'chess960' | 'crazyhouse' | 'antichess' | 'atomic' | 'horde' | 'kingOfTheHill' | 'racingKings' | 'threeCheck' | 'fromPosition'
 export type openingSpeeds = 'ultraBullet' | 'bullet' | 'blitz' | 'rapid' | 'classical' | 'correspondence'
-export type statuses = 'created' |'started' |'aborted' |'mate' |'resign' |'stalemate' |'timeout' |'draw' |'outoftime' |'cheat' |'noStart' |'unknownFinish' |'variantEnd'
+export type statuses = 'created' | 'started' | 'aborted' | 'mate' | 'resign' | 'stalemate' | 'timeout' | 'draw' | 'outoftime' | 'cheat' | 'noStart' | 'unknownFinish' | 'variantEnd'
 
 export type titles = 'GM' | 'WGM' | 'IM' | 'WIM' | 'FM' | 'WFM' | 'NM' | 'CM' | 'WCM' | 'WNM' | 'LM' | 'BOT'
 
 export type gamePlayers = {
-  user: { id: string, name: string, title: titles, patron: boolean },
-  rating: number,
-  ratingDiff: number,
-  name: string,
-  provisional: boolean,
-  aiLevel: number,
-  analysis: {
-    inaccuracy: number,
-    mistake: number,
-    blunder: number,
-    acpl: number
-  },
-  team: string
+    user?: { id: string, name: string, title: titles, patron: boolean },
+    rating: number,
+    ratingDiff: number,
+    name: string,
+    provisional: boolean,
+    aiLevel?: number,
+    analysis: {
+        inaccuracy: number,
+        mistake: number,
+        blunder: number,
+        acpl: number
+    },
+    team: string
 }
 
 export type exportGameResponse = {
-  id: string,
-  rated: boolean,
-  variant: openingVariants,
-  speed: openingSpeeds,
-  perf: string,
-  createdAt: number,
-  lastMoveAt: number,
-  status: statuses,
-  players: {
-    white: gamePlayers,
-    black: gamePlayers
-  },
-  initialFen: string,
-  winner: 'white' | 'black',
-  opening: {
-    eco: string,
-    name: string,
-    ply: number
-  },
-  moves: string,
-  pgn?: string,
-  daysPerTurn: number,
-  tournament: string,
-  swiss: string,
+    id: string,
+    rated: boolean,
+    variant: openingVariants,
+    speed: openingSpeeds,
+    perf: string,
+    createdAt: number,
+    lastMoveAt: number,
+    status: statuses,
+    players: {
+        white: gamePlayers,
+        black: gamePlayers
+    },
+    initialFen: string,
+    winner: 'white' | 'black',
+    opening: {
+        eco: string,
+        name: string,
+        ply: number
+    },
+    moves: string,
+    pgn?: string,
+    daysPerTurn: number,
+    tournament: string,
+    swiss: string,
 }
 
 export type RunningStream<T> = {

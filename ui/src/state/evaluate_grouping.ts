@@ -1,0 +1,53 @@
+import type { PerGameLineFitness } from "./fitness2"
+import type { Book, Line, Playlist } from "./shared_types"
+
+export type GroupedLine = {
+    book: Book,
+    playlist: Playlist,
+    line: Line,
+    nb_wins: number,
+    items: PerGameLineFitness[]
+}
+
+export type GroupedLines = {
+    lines: GroupedLine[]
+    other: PerGameLineFitness[]
+}
+
+export function GroupedLines(list: PerGameLineFitness[]): GroupedLines {
+    let other = []
+    let res = new Map<string, GroupedLine>()
+
+    for (let item of list) {
+        if (!item.divergence_model) {
+            other.push(item)
+            continue
+        }
+        let key = `
+                ${item.divergence_model.best_matching_opening_line.book.id}
+                ${item.divergence_model.best_matching_opening_line.playlist.id}
+                ${item.divergence_model.best_matching_opening_line.line.id}
+                `
+
+        if (res.has(key)) {
+            res.get(key)!.items.push(item)
+            if (item.match.game.did_you_win) {
+                res.get(key)!.nb_wins += 1
+            }
+        }
+        else res.set(key, {
+            book: item.divergence_model.best_matching_opening_line.book,
+            line: item.divergence_model.best_matching_opening_line.line,
+            playlist: item.divergence_model.best_matching_opening_line.playlist,
+            items: [item],
+            nb_wins: 0
+        })
+    }
+
+    return {
+        lines: [...res.values()].sort((a, b) => a.items.length - b.items.length),
+        other,
+    }
+}
+
+

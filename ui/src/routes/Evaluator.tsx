@@ -7,6 +7,8 @@ import { A } from "@solidjs/router";
 import { useState } from "../state/State";
 import type { AllowedSpeed, DivergedGame, LichessGameId } from "../state/shared_types";
 import type { TT_Params } from "../state/fitness2";
+import { GroupedLines } from "../state/evaluate_grouping";
+import { OcProject2 } from "solid-icons/oc";
 
 export default function Evaluator() {
 
@@ -37,6 +39,7 @@ export default function Evaluator() {
                     <Switch fallback={
                         <>
                             <Assesment />
+                            <DivergenceReport />
                             <RecentMatches />
                         </>
                     }>
@@ -51,6 +54,38 @@ export default function Evaluator() {
                 <HowItWorks />
             </div>
         </main>
+    </>)
+}
+
+function DivergenceReport() {
+
+
+    const [{ evaluate_state: state }] = useState()
+
+    const list = createMemo(() => {
+        return state.fitnessScore!.NAll.sort((a, b) => b.match.game.created_at - a.match.game.created_at)
+    })
+
+    const groupedLines = createMemo(() => GroupedLines(list()))
+
+    return (<>
+        <div class='divergence-report'>
+            <div class='title'><OcProject2 />Divergence Report</div>
+            <div class='list'>
+                <For each={groupedLines().lines}>{line =>
+                    <div class='item'>
+                        <span><span class='big'>{Math.floor(line.nb_wins / line.items.length * 100)}%</span> win rate on</span>
+                        <span><span class='big'>{line.items.length}</span> games with</span>
+                        <span>{line.playlist.name} {line.line.name} from book {line.book.name} by {line.book.author}</span>
+                    </div>
+                }</For>
+            </div>
+            <div class='other'>
+                <div class='item'>
+                    {groupedLines().other.length} games with Unknown openings
+                </div>
+            </div>
+        </div>
     </>)
 }
 
@@ -113,7 +148,7 @@ function RecentMatches() {
                             <span class='time'>{item.match.game.speed}</span>
                         </div>
                         <div class='vs'>
-                            <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A> vs
+                            <A href={`https://lichess.org/@/${item.match.game.white}`}>{item.match.game.white}</A>vs
                             <A href={`https://lichess.org/@/${item.match.game.black}`}>{item.match.game.black}</A>
                         </div>
                         <div class='pgn'><PgnMovesDivergence played={item.match.game.san_moves} diverge_at_ply={item.match.diverge?.diverge_at_ply} line={item.match.diverge?.most_matched_line.line.san_moves} /></div>

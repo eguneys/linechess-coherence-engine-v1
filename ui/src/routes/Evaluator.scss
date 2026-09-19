@@ -4,9 +4,9 @@ main.evaluator {
     display: grid;
 
     grid-template-areas: 'search'
-                         'results'
-                         'recent';
-    
+        'results'
+        'recent';
+
     gap: variables.$m05;
 
     .search-bar {
@@ -23,6 +23,47 @@ main.evaluator {
 }
 
 main.evaluator {
+
+    .divergence-report {
+        display: flex;
+        flex-flow: column;
+        padding: variables.$m2;
+        @include variables.rounded-shadow;
+        margin: variables.$s1;
+
+        &>.title {
+            display: flex;
+            align-items: center;
+            gap: variables.$s3;
+            @include variables.google-sans-flex(600);
+            color: variables.$grey0;
+            font-size: variables.$m25;
+            @include variables.looser;
+            padding: variables.$m3 0;
+
+            svg {
+                color: variables.$red-2;
+            }
+        }
+
+
+        .item {
+            @include variables.google-sans-flex(400);
+            @include variables.loose;
+
+            display: flex;
+            gap: variables.$s2;
+
+            .big {
+                font-size: 1.2em;
+            }
+
+            align-items: center;
+        }
+
+    }
+
+
     .recent-matches {
         display: flex;
         flex-flow: column;
@@ -30,7 +71,7 @@ main.evaluator {
         @include variables.rounded-shadow;
         margin: variables.$s1;
 
-        &> .title {
+        &>.title {
             display: flex;
             align-items: center;
             gap: variables.$s3;
@@ -62,6 +103,7 @@ main.evaluator {
                 @include variables.rounded-shadow;
 
                 cursor: pointer;
+
                 &:hover {
                     background: variables.$grey-45;
                 }
@@ -72,39 +114,44 @@ main.evaluator {
                     padding: variables.$s2 0;
                     display: flex;
                     justify-content: space-between;
-                   @include variables.google-sans-flex(600);
-                   @include variables.loose;
+                    @include variables.google-sans-flex(600);
+                    @include variables.loose;
 
-                   .time {
-                     @include variables.rounded-shadow;
-                     padding: variables.$s1;
-                     background: variables.$grey-45;
-                     font-size: variables.$m2;
-                     color: variables.$grey2;
-                     text-transform: uppercase;
-                     line-height: variables.$s3;
-                     align-self: flex-end;
-                     padding-inline: variables.$s2;
-                   }
+                    .time {
+                        @include variables.rounded-shadow;
+                        padding: variables.$s1;
+                        background: variables.$grey-45;
+                        font-size: variables.$m2;
+                        color: variables.$grey2;
+                        text-transform: uppercase;
+                        line-height: variables.$s3;
+                        align-self: flex-end;
+                        padding-inline: variables.$s2;
+                    }
                 }
 
                 .vs {
-                   @include variables.google-sans-flex(400);
-                   text-align: center;
+                    @include variables.google-sans-flex(400);
+                    text-align: center;
+                    display: flex;
+                    justify-content: center;
+                    gap: variables.$s0;
                 }
 
                 p {
                     padding: variables.$s3 0;
                     display: flex;
-                    flex-flow:wrap;
+                    flex-flow: wrap;
                     gap: variables.$s2;
                     color: variables.$grey0;
-                   @include variables.google-sans-flex(400);
+                    @include variables.google-sans-flex(400);
 
-                   .line-name, .book-name, .author {
-                    color: variables.$navy-3;
-                   @include variables.google-sans-flex(500);
-                   }
+                    .line-name,
+                    .book-name,
+                    .author {
+                        color: variables.$navy-3;
+                        @include variables.google-sans-flex(500);
+                    }
                 }
 
                 .long {
@@ -127,6 +174,7 @@ main.evaluator {
                         .played.hidable {
                             display: none;
                         }
+
                         .line {
                             display: block;
                         }
@@ -149,14 +197,15 @@ main.evaluator {
                     gap: variables.$s2;
 
                     .time {
-                      @include variables.google-sans-flex(500);
-                      color: variables.$grey-1;
-                      font-size: variables.$m15;
+                        @include variables.google-sans-flex(500);
+                        color: variables.$grey-1;
+                        font-size: variables.$m15;
                     }
 
                     .long {
                         flex: 1;
                     }
+
                     .score {
                         text-transform: uppercase;
                         @include variables.aldrich;
@@ -194,6 +243,7 @@ main.evaluator {
         align-items: center;
         @include variables.rounded-shadow;
     }
+
     .results {
 
         .how {
@@ -203,28 +253,28 @@ main.evaluator {
             align-items: center;
             gap: variables.$s1;
 
-           svg {
-            font-size: variables.$l05;
-            color: variables.$grey0;
-           }
+            svg {
+                font-size: variables.$l05;
+                color: variables.$grey0;
+            }
 
-           .title {
-            display: flex;
-            align-items: center;
+            .title {
+                display: flex;
+                align-items: center;
 
-            font-size: variables.$l0;
-            @include variables.google-sans-flex(600);
-            text-transform: uppercase;
-            @include variables.loose;
-            gap: variables.$m1;
-           }
+                font-size: variables.$l0;
+                @include variables.google-sans-flex(600);
+                text-transform: uppercase;
+                @include variables.loose;
+                gap: variables.$m1;
+            }
 
-           p {
+            p {
 
-            text-indent: variables.$s1;
-            @include variables.google-sans-flex(400);
-            color: variables.$grey0;
-            text-align: left;
+                text-indent: variables.$s1;
+                @include variables.google-sans-flex(400);
+                color: variables.$grey0;
+                text-align: left;
 
                 &.highlight {
                     text-indent: 0;
@@ -233,7 +283,7 @@ main.evaluator {
                     text-align: center;
                     @include variables.google-sans-flex(500);
                 }
-           }
+            }
         }
     }
 
@@ -249,13 +299,14 @@ main.evaluator {
             text-transform: uppercase;
             @include variables.loose;
             gap: variables.$m1;
+
             svg {
                 color: variables.$green-2;
             }
         }
 
         p {
-            
+
             @include variables.responsive-font(8, 24);
             @include variables.google-sans-flex(400);
             color: variables.$grey0;
@@ -276,7 +327,7 @@ main.evaluator {
             @include variables.respond-to("md") {
                 flex-flow: row;
             }
-    
+
             gap: variables.$m1;
 
             .icon-search {
@@ -295,39 +346,40 @@ main.evaluator {
                     @include variables.respond-to("sm") {
                         width: 20em;
                     }
-                    
+
 
                     @include variables.respond-to("md") {
                         width: 30em;
                     }
-                    
+
                     &:focus {
                         outline: none;
                     }
 
                 }
 
-                &, input::placeholder {
-                   color: variables.$grey-1;
-                   @include variables.loose;
+                &,
+                input::placeholder {
+                    color: variables.$grey-1;
+                    @include variables.loose;
                 }
-           }
-
-           button {
-            padding-inline: variables.$l0;
-            text-transform: uppercase;
-            color: variables.$white0;
-            background: variables.$navy2;
-            @include variables.google-sans-flex(600);
-            @include variables.loose;
-            border: none;
-            border-radius: variables.$px;
-
-            &:hover {
-               background: variables.$navy15;
-               color: variables.$white1;
             }
-           }
+
+            button {
+                padding-inline: variables.$l0;
+                text-transform: uppercase;
+                color: variables.$white0;
+                background: variables.$navy2;
+                @include variables.google-sans-flex(600);
+                @include variables.loose;
+                border: none;
+                border-radius: variables.$px;
+
+                &:hover {
+                    background: variables.$navy15;
+                    color: variables.$white1;
+                }
+            }
 
         }
     }
@@ -337,7 +389,9 @@ main.evaluator {
 
 main.evaluator {
     .results {
-        .not-found, .api-error {
+
+        .not-found,
+        .api-error {
             display: flex;
             justify-content: center;
             padding: variables.$l0;
@@ -350,16 +404,17 @@ main.evaluator {
 
 main.evaluator {
     .results {
-    .loading {
-        display: flex;
-        flex-flow: column;
+        .loading {
+            display: flex;
+            flex-flow: column;
 
-        .spinner {
+            .spinner {
 
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 gap: variables.$l0;
+
                 .dot {
                     font-size: variables.$l1;
                     @include variables.google-sans-flex(700);
@@ -372,28 +427,29 @@ main.evaluator {
                         transition: .2s;
                     }
                 }
-        }
-        .title {
-          display: flex;
-          align-items: center;
-          align-self: center;
- 
+            }
 
-          @include variables.responsive-font(12, 25);
-          @include variables.google-sans-flex(600);
-          text-transform: uppercase;
-          @include variables.loose;
-          gap: variables.$m1;
+            .title {
+                display: flex;
+                align-items: center;
+                align-self: center;
+
+
+                @include variables.responsive-font(12, 25);
+                @include variables.google-sans-flex(600);
+                text-transform: uppercase;
+                @include variables.loose;
+                gap: variables.$m1;
+            }
         }
     }
-  }
 }
 
 
 main.evaluator {
     .assesment-with-config {
         .sliders {
- 
+
             .configure {
                 display: flex;
                 flex-flow: column;
@@ -419,7 +475,7 @@ main.evaluator {
                         color: variables.$green2;
                         text-transform: capitalize;
                     }
-                    
+
                     .show-advanced {
                         display: flex;
                         align-items: center;
@@ -434,7 +490,7 @@ main.evaluator {
                             color: variables.$navy0;
                         }
                     }
-                
+
 
                     .advanced {
                         display: none;
@@ -471,23 +527,23 @@ main.evaluator {
                         }
                     }
 
-                        .slider {
-                            display: flex;
+                    .slider {
+                        display: flex;
+                        flex: 1;
+                        align-items: center;
+
+                        gap: variables.$m0;
+                        padding-inline: variables.$s2;
+
+                        input {
                             flex: 1;
-                            align-items: center;
-
-                            gap: variables.$m0;
-                            padding-inline: variables.$s2;
-
-                            input {
-                                flex: 1;
-                                cursor: pointer;
-                            }
-
-                            .value {
-                                color: variables.$green0;
-                            }
+                            cursor: pointer;
                         }
+
+                        .value {
+                            color: variables.$green0;
+                        }
+                    }
 
 
                 }
@@ -515,6 +571,7 @@ main.evaluator {
                 margin-bottom: 0;
                 font-size: variables.$m3;
                 border-radius: variables.$s2;
+
                 &:hover {
                     background: variables.$navy-3;
                     color: variables.$white0;
@@ -558,8 +615,8 @@ main.evaluator {
             .title {
 
                 @include variables.responsive-font(12, 25);
-               @include variables.google-sans-flex(600);
-               text-transform: uppercase;
+                @include variables.google-sans-flex(600);
+                text-transform: uppercase;
 
                 a {
                     text-transform: none;
@@ -571,7 +628,9 @@ main.evaluator {
 }
 
 main.evaluator {
-    .onebar-label, .ofsbar-label {
+
+    .onebar-label,
+    .ofsbar-label {
         display: flex;
         flex-flow: column;
         position: relative;
@@ -583,9 +642,10 @@ main.evaluator {
         }
 
         .bar-bg {
-          background: variables.$purple-6-a;
+            background: variables.$purple-6-a;
         }
-            .bar {
+
+        .bar {
             background: variables.$green-3;
             width: attr(data-progress);
         }
@@ -600,7 +660,10 @@ main.evaluator {
                 color: variables.$black4;
             }
         }
-        .bar { height: .6em; }
+
+        .bar {
+            height: .6em;
+        }
     }
 
     .ofsbar-label {
@@ -616,6 +679,7 @@ main.evaluator {
                 font-size: variables.$l0;
             }
         }
+
         .bar {
             height: 1em;
         }
