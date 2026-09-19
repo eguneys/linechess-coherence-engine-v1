@@ -53,9 +53,19 @@ main.evaluator {
 
             display: flex;
             gap: variables.$s2;
+            color: variables.$black4;
 
             .big {
+                color: variables.$black1;
                 font-size: 1.2em;
+            }
+
+            .playlist {
+                color: variables.$navy3;
+            }
+
+            .line {
+                color: variables.$navy-2;
             }
 
             align-items: center;

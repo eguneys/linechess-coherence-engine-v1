@@ -73,19 +73,19 @@ function DivergenceReport() {
             <div class='title'><OcProject2 />Divergence Report</div>
             <div class='list'>
                 <For each={groupedLines().lines}>{line =>
-                    <div class='item'>
+                    < div class='item'>
                         <span><span class='big'>{Math.floor(line.nb_wins / line.items.length * 100)}%</span> win rate on</span>
                         <span><span class='big'>{line.items.length}</span> games with</span>
-                        <span>{line.playlist.name} {line.line.name} from book {line.book.name} by {line.book.author}</span>
+                        <span><span class='playlist'>{line.playlist.name}</span> <span class='line'>{line.line.name}</span> from book {line.book.name} by {line.book.author}</span>
                     </div>
                 }</For>
-            </div>
+            </div >
             <div class='other'>
                 <div class='item'>
-                    {groupedLines().other.length} games with Unknown openings
+                    <span class='big'>{groupedLines().other.length}</span> games with Unknown openings
                 </div>
             </div>
-        </div>
+        </div >
     </>)
 }
 

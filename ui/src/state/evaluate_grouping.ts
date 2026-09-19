@@ -45,7 +45,13 @@ export function GroupedLines(list: PerGameLineFitness[]): GroupedLines {
     }
 
     return {
-        lines: [...res.values()].sort((a, b) => a.items.length - b.items.length),
+        lines: [...res.values()].sort((a, b) => {
+            let res = b.items.length - a.items.length
+            if (res === 0) {
+                return b.nb_wins - a.nb_wins
+            }
+            return res
+        }),
         other,
     }
 }
