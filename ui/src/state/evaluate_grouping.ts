@@ -40,7 +40,7 @@ export function GroupedLines(list: PerGameLineFitness[]): GroupedLines {
             line: item.divergence_model.best_matching_opening_line.line,
             playlist: item.divergence_model.best_matching_opening_line.playlist,
             items: [item],
-            nb_wins: 0
+            nb_wins: item.match.game.did_you_win ? 1 : 0
         })
     }
 
