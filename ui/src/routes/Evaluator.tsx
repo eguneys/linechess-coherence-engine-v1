@@ -111,7 +111,7 @@ function RecentMatches() {
     const [{ evaluate_state: state }] = useState()
 
     const on_open_lichess_game = (id: LichessGameId) => {
-        window.location.href = `https://lichess.org/${id}`
+        window.open(`https://lichess.org/${id}`, '_blank')
     }
 
     const list = createMemo(() => {
